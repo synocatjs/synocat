@@ -1,0 +1,28 @@
+{
+  "name": "synocat",
+  "version": "1.0.0",
+  "description": "CLI scaffold tool for Synology DSM 7 packages — designed for frontend developers",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "synocat": "src/index.js",
+    "synopkg": "src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js"
+  },
+  "keywords": ["synology", "dsm", "spk", "nas", "package", "scaffold", "cli"],
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^11.1.0",
+    "inquirer": "^9.2.12",
+    "ora": "^7.0.1",
+    "fs-extra": "^11.2.0",
+    "archiver": "^6.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
