@@ -1,0 +1,10 @@
+#!/bin/sh
+# scripts/postuninst — Post-uninstall cleanup (e.g. remove leftover files, clean DB).
+#
+# Environment variables:
+#   $SYNOPKG_PKGNAME, $SYNOPKG_PKGVER, $SYNOPKG_PKGDEST
+#   $SYNOPKG_TEMP_LOGFILE  — Write messages here to show to user
+#   $SYNOPKG_DSM_LANGUAGE  — UI language (enu/chs/cht/jpn...)
+#   $SYNOPKG_PKG_STATUS    — INSTALL / UPGRADE / UNINSTALL
+
+exit 0
