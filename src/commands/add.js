@@ -11,8 +11,8 @@ import path from 'path';
 import fs from 'fs';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
-import { generateResource, generateScript } from '../core/generator.js';
-import { RESOURCE_WORKERS } from '../core/dsm-knowledge.js';
+import { generateResource, generateScript } from '../core/generator';
+import { RESOURCE_WORKERS } from '../core/dsm-knowledge';
 
 export async function addCommand(type, subtype, options = {}) {
   const cwd = process.cwd();

@@ -8,8 +8,8 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ora from 'ora';
 import fs from 'fs';
-import { generateScaffold } from '../core/generator.js';
-import { PackageValidator } from '../core/validator.js';
+import { generateScaffold } from '../core/generator';
+import { PackageValidator } from '../core/validator';
 
 const TEMPLATE_CHOICES = [
   {
