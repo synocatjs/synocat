@@ -2,18 +2,99 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  body {
-    @apply antialiased;
-  }
+/* 自定义样式优化 - 黑白青主题 */
+.min-h-screen {
+  min-height: 100vh;
 }
 
-@layer components {
-  .btn-primary {
-    @apply px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2;
+/* 卡片悬浮效果 */
+.el-card {
+  transition: all 0.3s ease;
+  border-radius: 12px;
+}
+
+.el-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* 按钮样式优化 */
+.el-button--small {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.el-button--small:hover {
+  transform: translateY(-1px);
+}
+
+/* 输入框样式 */
+.el-input__inner {
+  border-radius: 8px;
+  border-color: #e5e7eb;
+}
+
+.el-input__inner:focus {
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.1);
+}
+
+/* 标签样式 */
+.el-tag--success.el-tag--plain {
+  border-color: #d1fae5;
+  color: #10b981;
+  background-color: #f0fdf4;
+}
+
+/* 对话框样式优化 */
+.simple-dialog >>> .el-dialog {
+  border-radius: 16px;
+}
+
+.simple-dialog >>> .el-dialog__header {
+  border-bottom: 1px solid #f3f4f6;
+  padding: 20px 24px;
+}
+
+.simple-dialog >>> .el-dialog__title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.simple-dialog >>> .el-dialog__body {
+  padding: 24px;
+}
+
+.simple-dialog >>> .el-dialog__footer {
+  border-top: 1px solid #f3f4f6;
+  padding: 16px 24px;
+}
+
+/* 下拉菜单样式 */
+.el-dropdown-menu {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f3f4f6;
+}
+
+.el-dropdown-menu__item:hover {
+  background-color: #f9fafb;
+  color: #14b8a6;
+}
+
+/* 命令显示区域 */
+.font-mono {
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .el-main {
+    padding: 16px;
   }
   
-  .btn-secondary {
-    @apply px-6 py-3 bg-white text-purple-600 font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border-2 border-purple-600 flex items-center gap-2;
+  .el-card {
+    margin: 0 8px;
   }
 }
