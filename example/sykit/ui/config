@@ -1,0 +1,11 @@
+{
+  "com.example.sykit": {
+    "type": "app",
+    "title": "sykit",
+    "appWindow": "com.example.sykit",
+    "allUsers": false,
+    "allowMultiInstance": false,
+    "hidden": false,
+    "icon": "images/icon_{0}.png"
+  }
+}
