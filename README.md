@@ -1,7 +1,7 @@
 # synocat
 
 <div style="display: flex; flex-direction: column; align-items: center;">
-    <img src="assets/logo.svg" width="256" height="256" alt="Synology Package Logo">
+    <img src="docs/assets/logo.svg" width="256" height="256" alt="Synology Package Logo">
     <p style="margin-top: 12px; color: #666; font-size: 14px;">synocat（synocatjs）</p>
 </div>
 
