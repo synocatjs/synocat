@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>synocat - 安装成功</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部区域 -->
+        <div class="header">
+            <div class="logo-wrapper">
+                <div class="logo">
+                    <img src="assets/logo.svg" alt="synocat" style="border-radius: 1rem;">
+                </div>
+            </div>
+            <div class="badge">
+                <span class="badge-icon">✅</span>
+                <span>安装成功</span>
+            </div>
+            <h1 class="title">synocat <span class="version">v1.0.0</span></h1>
+            <p class="subtitle">CLI scaffold tool for Synology DSM 7 packages</p>
+        </div>
+
+        <!-- 主要内容区域 -->
+        <div class="content">
+            <div class="success-message">
+                <div class="success-icon">🎉</div>
+                <h2>恭喜！synocat 已成功安装</h2>
+                <p>您的 Synology DSM 7 包开发工具已准备就绪</p>
+            </div>
+
+            <!-- 快速开始 -->
+            <div class="quick-start">
+                <h3>🚀 快速开始</h3>
+                <div class="code-block">
+                    <pre><code id="installCommand"># 创建新项目
+synocat create my-package -t vue-desktop
+
+# 验证配置
+synocat validate ./my-package
+
+# 生成 .spk 包
+synocat pack ./my-package -o ./dist</code></pre>
+                    <button class="copy-btn" data-copy="installCommand">复制</button>
+                </div>
+            </div>
+
+            <!-- 系统信息 -->
+            <div class="info-grid" id="systemInfo">
+                <div class="info-card">
+                    <div class="info-icon">🐘</div>
+                    <h3>PHP 版本</h3>
+                    <p>8.0+</p>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon">📦</div>
+                    <h3>Node.js 版本</h3>
+                    <p>18+</p>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon">🌐</div>
+                    <h3>服务器环境</h3>
+                    <p>跨平台支持</p>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon">⏰</div>
+                    <h3>安装时间</h3>
+                    <p id="installTime">-</p>
+                </div>
+            </div>
+
+            <!-- 可用模板 -->
+            <div class="templates">
+                <h3>📦 可用模板</h3>
+                <div class="template-list">
+                    <div class="template-item">
+                        <span class="template-name">minimal</span>
+                        <span class="template-desc">纯 shell 包，支持所有平台</span>
+                    </div>
+                    <div class="template-item">
+                        <span class="template-name">node-service</span>
+                        <span class="template-desc">Node.js 后端服务</span>
+                    </div>
+                    <div class="template-item">
+                        <span class="template-name">vue-desktop</span>
+                        <span class="template-desc">Vue.js DSM 桌面应用</span>
+                    </div>
+                    <div class="template-item">
+                        <span class="template-name">docker</span>
+                        <span class="template-desc">Docker Compose 包 (DSM 7.2.1+)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 可用命令 -->
+            <div class="commands">
+                <h3>⚡ 可用命令</h3>
+                <div class="command-grid">
+                    <div class="command-item">
+                        <code>synocat</code>
+                        <span>交互式包创建向导</span>
+                    </div>
+                    <div class="command-item">
+                        <code>synocat create &lt;name&gt;</code>
+                        <span>创建新包</span>
+                    </div>
+                    <div class="command-item">
+                        <code>synocat validate &lt;path&gt;</code>
+                        <span>验证包配置</span>
+                    </div>
+                    <div class="command-item">
+                        <code>synocat pack &lt;path&gt;</code>
+                        <span>生成 .spk 包</span>
+                    </div>
+                    <div class="command-item">
+                        <code>synocat add resource</code>
+                        <span>添加 DSM 资源</span>
+                    </div>
+                    <div class="command-item">
+                        <code>synocat image &lt;file&gt;</code>
+                        <span>生成图标尺寸</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 下一步 -->
+            <div class="next-steps">
+                <h3>📚 下一步</h3>
+                <div class="links">
+                    <a href="https://help.synology.com/developer-guide/" target="_blank" rel="noopener noreferrer" class="link-card">
+                        <span>📖 DSM 开发者指南</span>
+                        <span>→</span>
+                    </a>
+                    <a href="https://github.com/SynologyOpenSource/ExamplePackages" target="_blank" rel="noopener noreferrer" class="link-card">
+                        <span>📦 示例包</span>
+                        <span>→</span>
+                    </a>
+                    <a href="#" class="link-card" id="docsLink">
+                        <span>📘 完整文档</span>
+                        <span>→</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部 -->
+        <div class="footer">
+            <p>Built with ❤️ for the Synology community</p>
+            <p class="license">MIT License © 2024</p>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
