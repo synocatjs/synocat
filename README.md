@@ -1,20 +1,12 @@
 # synocat
 
-<div style="
-  width: 5rem;
-  height: 5rem;
-  margin: 0 auto 1.5rem;
-  border-radius: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 20px 40px rgba(84, 85, 78, 0.3);
-  /* animation: float 3s ease-in-out infinite; */
-">
-  <img src="docs/assets/logo.svg" style="width: 100vh; height: 100vh; object-fit: contain; border-radius: 1rem;" alt="Synology Package Logo">
-</div>
-<p style="margin-top: 12px; color: #666; font-size: 14px; text-align: center;">synocat（synocatjs）</p>
+<p align="center">
+  <img src="docs/assets/logo.svg" width="80" height="80" alt="Synology Package Logo">
+</p>
 
+<p align="center">
+  <strong>synocat</strong> (synocatjs)
+</p>
 > CLI scaffold tool for Synology DSM 7 packages — designed for frontend developers.
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue)](https://www.typescriptlang.org/)
