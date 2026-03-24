@@ -152,7 +152,7 @@ if (typeof SYNO !== 'undefined') {
     i18n,
     data() {
       return {
-        appVersion: '1.0.0',
+        appVersion: '0.0.1',
         appName: 'Sykit UI'
       };
     }

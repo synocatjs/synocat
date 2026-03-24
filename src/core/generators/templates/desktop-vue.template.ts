@@ -2,7 +2,7 @@ import type { IScaffoldTemplate } from './base.template';
 import type { GeneratedFile, ScaffoldConfig } from '../../../types/';
 
 export class VueDesktopTemplate implements IScaffoldTemplate {
-  readonly type = 'vue-desktop';
+  readonly type = 'desktop-vue';
 
   generate(cfg: ScaffoldConfig): GeneratedFile[] {
     const appName = cfg.dsmappname ?? `com.example.${cfg.package}`;

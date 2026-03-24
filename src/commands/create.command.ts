@@ -8,10 +8,31 @@ import { ValidatorService } from '../services/validator.service';
 import type { ScaffoldConfig, TemplateType, ResourceShorthand } from '../types/';
 
 const TEMPLATE_CHOICES = [
-  { name: `${chalk.bold('minimal')}      — Pure shell package (supports all platforms)`, short: 'minimal',      value: 'minimal' as TemplateType },
-  { name: `${chalk.bold('node-service')} — Node.js backend service (with start/stop)`,    short: 'node-service', value: 'node-service' as TemplateType },
-  { name: `${chalk.bold('vue-desktop')}  — Vue.js desktop app (DSM Desktop UI)`,          short: 'vue-desktop',  value: 'vue-desktop' as TemplateType },
-  { name: `${chalk.bold('docker')}       — Docker Compose package (requires ContainerManager)`, short: 'docker', value: 'docker' as TemplateType },
+  // 基础模板
+  { name: `${chalk.bold('minimal')}      — Pure shell package (supports all platforms)`, short: 'minimal', value: 'minimal' as TemplateType },
+  
+  // 桌面 UI 模板
+  { name: `${chalk.bold('desktop-vue')}  — Vue.js desktop app (DSM Desktop UI)`, short: 'vue-desktop', value: 'vue-desktop' as TemplateType },
+  { name: `${chalk.bold('desktop-php')}  — PHP web interface (DSM Web Station)`, short: 'php-ui', value: 'php-ui' as TemplateType },
+  { name: `${chalk.bold('desktop-html')} — Static HTML/CSS/JS interface`, short: 'html-ui', value: 'html-ui' as TemplateType },
+  { name: `${chalk.bold('desktop-iframe')} — Embedded iframe viewer`, short: 'iframe', value: 'iframe' as TemplateType },
+  
+  // 容器模板
+  { name: `${chalk.bold('compose-docker')} — Docker Compose package (requires ContainerManager)`, short: 'docker', value: 'docker' as TemplateType },
+  { name: `${chalk.bold('podman')}        — Podman container (rootless, lightweight)`, short: 'podman', value: 'podman' as TemplateType },
+  
+  // CLI 工具模板
+  { name: `${chalk.bold('cli-c')}         — C language CLI tool`, short: 'cli-c', value: 'cli-c' as TemplateType },
+  { name: `${chalk.bold('cli-cpp')}       — C++ language CLI tool`, short: 'cli-cpp', value: 'cli-cpp' as TemplateType },
+  { name: `${chalk.bold('cli-rust')}      — Rust language CLI tool`, short: 'cli-rust', value: 'cli-rust' as TemplateType },
+  { name: `${chalk.bold('cli-shell')}     — Shell script CLI tool`, short: 'cli-shell', value: 'cli-shell' as TemplateType },
+  { name: `${chalk.bold('cli-go')}        — Go language CLI tool`, short: 'cli-go', value: 'cli-go' as TemplateType },
+  { name: `${chalk.bold('cli-python')}    — Python CLI tool`, short: 'cli-python', value: 'cli-python' as TemplateType },
+  
+  // 后台服务模板
+  { name: `${chalk.bold('service-go')}    — Go HTTP backend service`, short: 'service-go', value: 'service-go' as TemplateType },
+  { name: `${chalk.bold('service-python')} — Python HTTP backend service`, short: 'service-python', value: 'service-python' as TemplateType },
+  { name: `${chalk.bold('service-node')}  — Node.js backend service (with start/stop)`, short: 'service-node', value: 'service-node' as TemplateType },
 ];
 
 interface Answers {
@@ -36,55 +57,75 @@ interface Answers {
   dsmappname?: string;
 }
 
-
-
 export async function createCommand(name?: string, templateOverride?: TemplateType): Promise<void> {
   console.log('');
   console.log(chalk.bold.cyan('  🐈  synocat'));
   console.log(chalk.gray('  Synology DSM 7.2.2 Package Scaffold Generator\n'));
 
-  const answers= await inquirer.prompt<Answers>([
-    {
-      type: 'input',
-      name: 'package',
-      message: `Package ID ${chalk.gray('(used for /var/packages/[ID], no : / > < | =)')}`,
-      default: name,
-      validate: (v: string) => {
-        if (!v.trim()) return 'Package ID cannot be empty';
-        if (/[:/><=|]/.test(v)) return 'Cannot contain: : / > < | =';
-        return true;
-      },
+  // 分步询问，避免类型复杂
+  const answers: Answers = {} as Answers;
+
+  // Package ID
+  const { package: pkg } = await inquirer.prompt([{
+    type: 'input',
+    name: 'package',
+    message: `Package ID ${chalk.gray('(used for /var/packages/[ID], no : / > < | =)')}`,
+    default: name,
+    validate: (v: string) => {
+      if (!v.trim()) return 'Package ID cannot be empty';
+      if (/[:/><=|]/.test(v)) return 'Cannot contain: : / > < | =';
+      return true;
     },
-    {
-      type: 'input',
-      name: 'displayname',
-      message: `Display name ${chalk.gray('(shown in Package Center)')}`,
-      default: (a: { package: string }) => a.package,
-    },
-    {
-      type: 'input',
-      name: 'description',
-      message: 'Package description',
-      validate: (v: string) => v.trim() ? true : 'Description cannot be empty',
-    },
-    {
-      type: 'input',
-      name: 'version',
-      message: `Version ${chalk.gray('(format: major.minor.patch-build)')}`,
-      default: '1.0.0-0001',
-      validate: (v: string) => /^[\d._-]+$/.test(v) ? true : 'Only digits, dots, underscores, hyphens allowed',
-    },
-    {
-      type: 'input',
-      name: 'maintainer',
-      message: 'Maintainer / developer name',
-      validate: (v: string) => v.trim() ? true : 'Maintainer cannot be empty',
-    },
-    {
-      type: 'input',
-      name: 'maintainer_url',
-      message: `Developer webpage ${chalk.gray('(optional)')}`,
-    },
+  }]);
+  answers.package = pkg;
+
+  // Display name
+  const { displayname } = await inquirer.prompt([{
+    type: 'input',
+    name: 'displayname',
+    message: `Display name ${chalk.gray('(shown in Package Center)')}`,
+    default: answers.package,
+  }]);
+  answers.displayname = displayname;
+
+  // Description
+  const { description } = await inquirer.prompt([{
+    type: 'input',
+    name: 'description',
+    message: 'Package description',
+    validate: (v: string) => v.trim() ? true : 'Description cannot be empty',
+  }]);
+  answers.description = description;
+
+  // Version
+  const { version } = await inquirer.prompt([{
+    type: 'input',
+    name: 'version',
+    message: `Version ${chalk.gray('(format: major.minor.patch-build)')}`,
+    default: '1.0.0-0001',
+    validate: (v: string) => /^[\d._-]+$/.test(v) ? true : 'Only digits, dots, underscores, hyphens allowed',
+  }]);
+  answers.version = version;
+
+  // Maintainer
+  const { maintainer } = await inquirer.prompt([{
+    type: 'input',
+    name: 'maintainer',
+    message: 'Maintainer / developer name',
+    validate: (v: string) => v.trim() ? true : 'Maintainer cannot be empty',
+  }]);
+  answers.maintainer = maintainer;
+
+  // Maintainer URL
+  const { maintainer_url } = await inquirer.prompt([{
+    type: 'input',
+    name: 'maintainer_url',
+    message: `Developer webpage ${chalk.gray('(optional)')}`,
+  }]);
+  answers.maintainer_url = maintainer_url;
+
+  // Architecture
+  const { arch, arch_custom } = await inquirer.prompt([
     {
       type: 'list',
       name: 'arch',
@@ -101,99 +142,119 @@ export async function createCommand(name?: string, templateOverride?: TemplateTy
       type: 'input',
       name: 'arch_custom',
       message: 'Enter architectures (space-separated, e.g.: x86_64 armv8)',
-      when: (a: { arch: string }) => a.arch === '__custom__',
-    },
-    {
-      type: 'input',
-      name: 'os_min_ver',
-      message: `Min DSM version ${chalk.gray('(>= 7.0-40000 for DSM 7)')}`,
-      default: '7.0-40000',
-      validate: (v: string) => /^\d+\.\d+-\d+$/.test(v) ? true : 'Format must be X.Y-Z (e.g. 7.0-40000)',
-    },
-    {
-      type: 'list',
-      name: 'templateType',
-      message: 'Package template',
-      choices: TEMPLATE_CHOICES,
-      default: templateOverride ?? 'minimal',
-    },
-    {
+      when: (a: any) => a.arch === '__custom__',
+    }
+  ]);
+  answers.arch = arch === '__custom__' ? arch_custom : arch;
+  answers.arch_custom = arch_custom;
+
+  // Minimum DSM version
+  const { os_min_ver } = await inquirer.prompt([{
+    type: 'input',
+    name: 'os_min_ver',
+    message: `Min DSM version ${chalk.gray('(>= 7.0-40000 for DSM 7)')}`,
+    default: '7.0-40000',
+    validate: (v: string) => /^\d+\.\d+-\d+$/.test(v) ? true : 'Format must be X.Y-Z (e.g. 7.0-40000)',
+  }]);
+  answers.os_min_ver = os_min_ver;
+
+  // Template
+  const { templateType } = await inquirer.prompt([{
+    type: 'list',
+    name: 'templateType',
+    message: 'Package template',
+    choices: TEMPLATE_CHOICES,
+    default: templateOverride ?? 'minimal',
+  }]);
+  answers.templateType = templateType;
+
+  // Admin UI (只在非 vue-desktop 时询问)
+  if (answers.templateType !== 'vue-desktop') {
+    const { hasAdminUI } = await inquirer.prompt([{
       type: 'confirm',
       name: 'hasAdminUI',
       message: `Include a web admin UI? ${chalk.gray('(sets adminport/adminurl)')}`,
       default: false,
-      when: (a: { templateType: TemplateType }) => a.templateType !== 'vue-desktop',
-    },
-    {
-      type: 'input',
-      name: 'adminport',
-      message: 'Admin UI port',
-      default: '8080',
-      when: (a: { hasAdminUI?: boolean }) => a.hasAdminUI === true,
-      validate: (v: string) => {
-        const p = parseInt(v, 10);
-        return !isNaN(p) && p >= 1 && p <= 65535 ? true : 'Port must be 1–65535';
-      },
-    },
-    {
-      type: 'input',
-      name: 'adminurl',
-      message: `Admin UI URL path ${chalk.gray('(e.g. / or /admin)')}`,
-      default: '/',
-      when: (a: { hasAdminUI?: boolean }) => a.hasAdminUI === true,
-    },
-    {
-      type: 'list',
-      name: 'adminprotocol',
-      message: 'Admin UI protocol',
-      choices: ['http', 'https'],
-      default: 'http',
-      when: (a: { hasAdminUI?: boolean }) => a.hasAdminUI === true,
-    },
-    {
-      type: 'confirm',
-      name: 'hasResource',
-      message: `Need system resources? ${chalk.gray('(ports, shared folders, database, Docker)')}`,
-      default: false,
-    },
-    {
-      type: 'list',
-      name: 'resourceType',
-      message: 'Resource type',
-      when: (a: { hasResource: boolean }) => a.hasResource,
-      choices: [
-        { name: 'port        — Firewall port registration',     value: 'port' },
-        { name: 'data-share  — Shared folder access',           value: 'data-share' },
-        { name: 'mariadb     — MariaDB 10 database',            value: 'mariadb' },
-        { name: 'docker      — Docker Compose project',         value: 'docker' },
-        { name: 'port+share  — Port + shared folder',           value: 'port+share' },
-      ],
-    },
-    {
-      type: 'input',
-      name: 'resourcePort',
-      message: 'Port number to register',
-      default: (a: { adminport?: string }) => a.adminport ?? '8080',
-      when: (a: { resourceType?: string }) =>
-        a.resourceType === 'port' || a.resourceType === 'port+share',
-    },
-  ]);
+    }]);
+    answers.hasAdminUI = hasAdminUI;
 
-  // Resolve custom arch
-  if (answers.arch === '__custom__') {
-    answers.arch = answers.arch_custom ?? 'noarch';
+    if (answers.hasAdminUI) {
+      const { adminport, adminurl, adminprotocol } = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'adminport',
+          message: 'Admin UI port',
+          default: '8080',
+          validate: (v: string) => {
+            const p = parseInt(v, 10);
+            return !isNaN(p) && p >= 1 && p <= 65535 ? true : 'Port must be 1–65535';
+          },
+        },
+        {
+          type: 'input',
+          name: 'adminurl',
+          message: `Admin UI URL path ${chalk.gray('(e.g. / or /admin)')}`,
+          default: '/',
+        },
+        {
+          type: 'list',
+          name: 'adminprotocol',
+          message: 'Admin UI protocol',
+          choices: ['http', 'https'],
+          default: 'http',
+        }
+      ]);
+      answers.adminport = adminport;
+      answers.adminurl = adminurl;
+      answers.adminprotocol = adminprotocol;
+    }
+  }
+
+  // Resource
+  const { hasResource } = await inquirer.prompt([{
+    type: 'confirm',
+    name: 'hasResource',
+    message: `Need system resources? ${chalk.gray('(ports, shared folders, database, Docker)')}`,
+    default: false,
+  }]);
+  answers.hasResource = hasResource;
+
+  if (answers.hasResource) {
+    const { resourceType, resourcePort } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'resourceType',
+        message: 'Resource type',
+        choices: [
+          { name: 'port        — Firewall port registration',     value: 'port' },
+          { name: 'data-share  — Shared folder access',           value: 'data-share' },
+          { name: 'mariadb     — MariaDB 10 database',            value: 'mariadb' },
+          { name: 'docker      — Docker Compose project',         value: 'docker' },
+          { name: 'port+share  — Port + shared folder',           value: 'port+share' },
+        ],
+      },
+      {
+        type: 'input',
+        name: 'resourcePort',
+        message: 'Port number to register',
+        default: answers.adminport ?? '8080',
+        when: (a: any) => a.resourceType === 'port' || a.resourceType === 'port+share',
+      }
+    ]);
+    answers.resourceType = resourceType;
+    answers.resourcePort = resourcePort;
   }
 
   // Vue template DSM desktop defaults
   if (answers.templateType === 'vue-desktop') {
-    answers.dsmuidir   = 'ui';
+    answers.dsmuidir = 'ui';
     answers.dsmappname = `com.example.${answers.package}`;
     answers.hasAdminUI = false;
-    answers.adminport  = '0';
+    answers.adminport = '0';
   }
 
-  const targetDir = path.resolve(process.cwd(), answers.package as string);
-  const fs        = new NodeFileSystem();
+  const targetDir = path.resolve(process.cwd(), answers.package);
+  const fs = new NodeFileSystem();
 
   // Overwrite check
   if (fs.exists(targetDir)) {
@@ -213,32 +274,32 @@ export async function createCommand(name?: string, templateOverride?: TemplateTy
 
   try {
     const cfg: ScaffoldConfig = {
-      package:       answers.package as string,
-      version:       answers.version as string,
-      os_min_ver:    answers.os_min_ver as string,
-      description:   answers.description as string,
-      arch:          answers.arch as string,
-      maintainer:    answers.maintainer as string,
-      displayname:   answers.displayname as string | undefined,
-      maintainer_url: answers.maintainer_url as string | undefined || undefined,
-      adminport:     answers.adminport as string | undefined,
-      adminurl:      answers.adminurl as string | undefined,
-      adminprotocol: answers.adminprotocol as 'http' | 'https' | undefined,
-      dsmuidir:      answers.dsmuidir as string | undefined,
-      dsmappname:    answers.dsmappname as string | undefined,
-      templateType:  answers.templateType as TemplateType,
-      hasAdminUI:    Boolean(answers.hasAdminUI),
-      hasResource:   Boolean(answers.hasResource),
-      resourceType:  answers.resourceType as ResourceShorthand | undefined,
-      hasUI:         answers.templateType === 'vue-desktop',
+      package: answers.package,
+      version: answers.version,
+      os_min_ver: answers.os_min_ver,
+      description: answers.description,
+      arch: answers.arch,
+      maintainer: answers.maintainer,
+      displayname: answers.displayname,
+      maintainer_url: answers.maintainer_url || undefined,
+      adminport: answers.adminport,
+      adminurl: answers.adminurl,
+      adminprotocol: answers.adminprotocol,
+      dsmuidir: answers.dsmuidir,
+      dsmappname: answers.dsmappname,
+      templateType: answers.templateType,
+      hasAdminUI: Boolean(answers.hasAdminUI),
+      hasResource: Boolean(answers.hasResource),
+      resourceType: answers.resourceType,
+      hasUI: answers.templateType === 'vue-desktop',
       resourceOpts: {
-        port:    answers.resourcePort ? parseInt(answers.resourcePort as string, 10) : undefined,
-        package: answers.package as string,
+        port: answers.resourcePort ? parseInt(answers.resourcePort, 10) : undefined,
+        package: answers.package,
       },
     };
 
     const service = new ScaffoldService(fs);
-    const files   = service.generate(targetDir, cfg);
+    const files = service.generate(targetDir, cfg);
 
     spinner.succeed(chalk.green('✓ Scaffold generated successfully'));
 
@@ -252,10 +313,10 @@ export async function createCommand(name?: string, templateOverride?: TemplateTy
     // Quick validation
     console.log('');
     const validator = new ValidatorService(fs);
-    const result    = validator.validate(targetDir);
+    const result = validator.validate(targetDir);
     if (result.warnings.length > 0) {
       console.log(chalk.yellow('⚠  Warnings (recommended to fix before publishing):'));
-      result.warnings.forEach((w:string) => console.log(chalk.yellow(`   ${w}`)));
+      result.warnings.forEach((w: string) => console.log(chalk.yellow(`   ${w}`)));
       console.log('');
     }
 
