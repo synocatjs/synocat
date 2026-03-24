@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Podman 安装成功</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="docker-icon" id="containerIcon">
+                🐳
+            </div>
+            <h1>✅ 安装成功！</h1>
+            <p class="message" id="containerMessage">您的容器已成功运行</p>
+            
+            <div class="info">
+                <div class="info-item">
+                    <span class="label">容器引擎:</span>
+                    <span class="value" id="engineType">检测中...</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">容器名称:</span>
+                    <span class="value" id="containerName">web-app</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">运行时间:</span>
+                    <span class="value" id="runTime">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">服务器:</span>
+                    <span class="value">Nginx/Alpine</span>
+                </div>
+            </div>
+            
+            <div class="success-steps">
+                <h3>🎉 下一步操作</h3>
+                <ul>
+                    <li>✅ 容器运行正常</li>
+                    <li>✅ Web 服务已启动</li>
+                    <li>✅ 网页可以正常访问</li>
+                </ul>
+            </div>
+            
+            <div class="commands">
+                <h3>📦 常用 Podman 命令</h3>
+                <div class="command-block">
+                    <code>podman ps</code>
+                    <span>查看运行中的容器</span>
+                </div>
+                <div class="command-block">
+                    <code>podman logs web-app</code>
+                    <span>查看容器日志</span>
+                </div>
+                <div class="command-block">
+                    <code>podman stop web-app</code>
+                    <span>停止容器</span>
+                </div>
+                <div class="command-block">
+                    <code>podman start web-app</code>
+                    <span>启动容器</span>
+                </div>
+                <div class="command-block">
+                    <code>podman exec -it web-app sh</code>
+                    <span>进入容器</span>
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p>Powered by Podman & Nginx</p>
+                <p class="version">版本 1.0.0</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 检测容器引擎
+        async function detectContainerEngine() {
+            try {
+                const response = await fetch('/.containerenv');
+                if (response.ok) {
+                    document.getElementById('engineType').textContent = 'Podman';
+                    document.getElementById('containerIcon').textContent = '🐳';
+                    document.getElementById('containerMessage').textContent = '您的 Podman 容器已成功运行';
+                } else {
+                    document.getElementById('engineType').textContent = 'Docker';
+                }
+            } catch (error) {
+                document.getElementById('engineType').textContent = '容器环境';
+            }
+        }
+        
+        // 显示运行时间
+        function updateRunTime() {
+            const startTime = new Date();
+            setInterval(() => {
+                const now = new Date();
+                const diff = Math.floor((now - startTime) / 1000);
+                const hours = Math.floor(diff / 3600);
+                const minutes = Math.floor((diff % 3600) / 60);
+                const seconds = diff % 60;
+                document.getElementById('runTime').textContent = 
+                    `${hours}小时 ${minutes}分钟 ${seconds}秒`;
+            }, 1000);
+        }
+        
+        detectContainerEngine();
+        updateRunTime();
+        
+        // 控制台输出
+        console.log('%c🐳 Podman 容器运行成功！', 'color: #2496ed; font-size: 16px; font-weight: bold;');
+        console.log('容器引擎: Podman');
+        console.log('访问地址: http://localhost:8080');
+    </script>
+</body>
+</html>
