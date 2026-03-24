@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>synocat - Synology DSM 7 Package Scaffold Tool</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <pre class="ascii-logo">
+╔════════════════════════════════════════════════════════════════╗
+║                                                                ║
+║    _____          _             _                      ║
+║   / ____|        | |           | |                     ║
+║  | (___   _ __   | |_   ___    | |_                    ║
+║   \___ \ | '_ \  | __| / _ \   | __|                   ║
+║   ____) || | | | | |_ | (_) |  | |_                    ║
+║  |_____/ |_| |_|  \__| \___/    \__|                   ║
+║                                                                ║
+╚════════════════════════════════════════════════════════════════╝
+                </pre>
+            </div>
+            <div class="success-badge">
+                ✓ INSTALLATION SUCCESSFUL!
+            </div>
+            <div class="version">
+                version <span id="version">{{ version }}</span>
+            </div>
+        </div>
+
+        <div class="status-card" id="status-card">
+            <h2>Service Status</h2>
+            <div class="status-grid">
+                <div class="status-item">
+                    <span class="label">Status:</span>
+                    <span class="value status-running" id="status">Loading...</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Version:</span>
+                    <span class="value" id="service-version">-</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Start Time:</span>
+                    <span class="value" id="start-time">-</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Uptime:</span>
+                    <span class="value" id="uptime">-</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Install Time:</span>
+                    <span class="value" id="install-time">-</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Host:</span>
+                    <span class="value" id="host">-</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Port:</span>
+                    <span class="value" id="port">-</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="features-card">
+            <h2>Available Features</h2>
+            <ul class="features-list" id="features-list">
+                <li>Loading...</li>
+            </ul>
+        </div>
+
+        <div class="templates-card">
+            <h2>Available Templates</h2>
+            <div class="templates-grid" id="templates-grid">
+                <div>Loading...</div>
+            </div>
+        </div>
+
+        <div class="quick-start-card">
+            <h2>Quick Start</h2>
+            <div class="commands" id="quick-start">
+                <div class="command">
+                    <span class="prompt">$</span>
+                    <span class="cmd">synocat create my-package</span>
+                </div>
+                <div class="command">
+                    <span class="prompt">$</span>
+                    <span class="cmd">synocat create my-package -t vue-desktop</span>
+                </div>
+                <div class="command">
+                    <span class="prompt">$</span>
+                    <span class="cmd">synocat pack ./my-package</span>
+                </div>
+                <div class="command">
+                    <span class="prompt">$</span>
+                    <span class="cmd">synocat validate ./package</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="api-card">
+            <h2>API Endpoints</h2>
+            <div class="api-list">
+                <div class="api-item">
+                    <span class="method">GET</span>
+                    <span class="endpoint">/api/status</span>
+                    <span class="description">Service status</span>
+                </div>
+                <div class="api-item">
+                    <span class="method">GET</span>
+                    <span class="endpoint">/api/health</span>
+                    <span class="description">Health check</span>
+                </div>
+                <div class="api-item">
+                    <span class="method">GET</span>
+                    <span class="endpoint">/api/info</span>
+                    <span class="description">Service information</span>
+                </div>
+                <div class="api-item">
+                    <span class="method">GET</span>
+                    <span class="endpoint">/api/system</span>
+                    <span class="description">System information</span>
+                </div>
+                <div class="api-item">
+                    <span class="method">GET</span>
+                    <span class="endpoint">/api/commands</span>
+                    <span class="description">Available commands</span>
+                </div>
+                <div class="api-item">
+                    <span class="method">POST</span>
+                    <span class="endpoint">/api/validate</span>
+                    <span class="description">Validate package</span>
+                </div>
+                <div class="api-item">
+                    <span class="method">POST</span>
+                    <span class="endpoint">/api/pack</span>
+                    <span class="description">Generate SPK</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Built with ❤️ for the Synology community</p>
+            <p class="links">
+                <a href="https://help.synology.com/developer-guide/">Documentation</a> |
+                <a href="https://github.com/SynologyOpenSource/ExamplePackages">Examples</a> |
+                <a href="https://github.com/synology/synocat">GitHub</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

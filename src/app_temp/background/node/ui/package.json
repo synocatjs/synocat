@@ -1,0 +1,40 @@
+{
+  "name": "synocat-service",
+  "version": "1.0.0",
+  "description": "Background service for Synology DSM 7 packages",
+  "main": "index.js",
+  "bin": {
+    "synocat-service": "./cli.js"
+  },
+  "scripts": {
+    "start": "node cli.js start",
+    "status": "node cli.js status",
+    "info": "node cli.js info",
+    "stop": "node cli.js stop",
+    "dev": "nodemon cli.js start",
+    "test": "node test.js",
+    "lint": "eslint *.js",
+    "format": "prettier --write *.js"
+  },
+  "keywords": [
+    "synology",
+    "dsm",
+    "package",
+    "service"
+  ],
+  "author": "Synology Community",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^11.1.0",
+    "pidusage": "^3.0.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.56.0",
+    "nodemon": "^3.0.3",
+    "prettier": "^3.1.1"
+  }
+}
