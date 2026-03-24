@@ -9,13 +9,13 @@ import { PlaceholderTemplate } from './placeholder.template';
 
 export const TEMPLATE_REGISTRY: Readonly<Record<TemplateType, IScaffoldTemplate>> = {
   'minimal-app': new MinimalTemplate(),
-  'minimal-server': new PlaceholderTemplate(),
+  'minimal-service': new PlaceholderTemplate(),
   'background-go': new PlaceholderTemplate(),
   'background-node': new NodeServiceTemplate(),
   'background-python': new PlaceholderTemplate(),
   'cli-c_cpp': new PlaceholderTemplate(),
   'cli-rust': new PlaceholderTemplate(),
-  'cli-other': new PlaceholderTemplate(),
+  'cli-shell': new PlaceholderTemplate(),
   'container-docker': new DockerTemplate(),
   'container-potman': new PlaceholderTemplate(),
   'desktop-html': new PlaceholderTemplate(),
@@ -24,5 +24,5 @@ export const TEMPLATE_REGISTRY: Readonly<Record<TemplateType, IScaffoldTemplate>
   'desktop-vue': new VueDesktopTemplate(),
   'web-php': new PlaceholderTemplate(),
   'web-python': new PlaceholderTemplate(),
-  'web-js_ts': new PlaceholderTemplate(),
+  'web-html': new PlaceholderTemplate(),
 };

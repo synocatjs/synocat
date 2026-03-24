@@ -11,84 +11,105 @@ import type {
   ResourceShorthand,
 } from "../types/";
 
-const TEMPLATE_CHOICES = [
+type templateItemProp = {
+  name: string;
+  short: string;
+  value: TemplateType;
+};
+const TEMPLATE_CHOICES: templateItemProp[] = [
   // 基础模板
   {
     name: `${chalk.bold("minimal-app")}      — Pure shell package (DSM Desktop UI) `,
     short: "ma",
-    value: "minimal-app" as TemplateType,
+    value: "minimal-app",
   },
   {
     name: `${chalk.bold("minimal-service")} — Minimal server app (supports all platforms)`,
     short: "ms",
-    value: "minimal-service" as TemplateType,
+    value: "minimal-service",
   },
 
   // 桌面 UI 模板
   {
     name: `${chalk.bold("desktop-vue")}  — Vue.js desktop app (DSM Desktop UI)`,
     short: "dv",
-    value: "desktop-vue" as TemplateType,
+    value: "desktop-vue",
   },
   {
     name: `${chalk.bold("desktop-php")}  — PHP web interface (DSM Web Station)`,
     short: "dp",
-    value: "desktop-php" as TemplateType,
+    value: "desktop-php",
   },
   {
     name: `${chalk.bold("desktop-html")} — Static HTML/CSS/JS interface`,
     short: "dh",
-    value: "desktop-html" as TemplateType,
+    value: "desktop-html",
   },
   {
     name: `${chalk.bold("desktop-iframe")} — Embedded iframe viewer`,
     short: "di",
-    value: "desktop-iframe" as TemplateType,
+    value: "desktop-iframe",
   },
 
   // 容器模板
   {
-    name: `${chalk.bold("compose-docker")} — Docker Compose package (requires ContainerManager)`,
+    name: `${chalk.bold("container-docker")} — Docker Compose package (requires ContainerManager)`,
     short: "cd",
-    value: "compose-docker" as TemplateType,
+    value: "container-docker",
   },
   {
-    name: `${chalk.bold("compose-podman")}        — Podman container (rootless, lightweight)`,
+    name: `${chalk.bold("container-podman")}        — Podman container (rootless, lightweight)`,
     short: "cp",
-    value: "compose-podman" as TemplateType,
+    value: "container-potman",
   },
 
   // CLI 工具模板
   {
     name: `${chalk.bold("cli-c_cpp")}         — C/Cpp language CLI tool`,
     short: "cc",
-    value: "cli-c_cpp" as TemplateType,
+    value: "cli-c_cpp",
   },
   {
     name: `${chalk.bold("cli-rust")}       — rust language CLI tool`,
     short: "cr",
-    value: "cli-rust" as TemplateType,
+    value: "cli-rust",
   },
   {
     name: `${chalk.bold("cli-shell")}      — shell script CLI tool`,
     short: "cs",
-    value: "cli-shell" as TemplateType,
+    value: "cli-shell",
   },
   // 后台服务模板
   {
     name: `${chalk.bold("background-go")}    — Go HTTP backend service`,
     short: "bg",
-    value: "background-go" as TemplateType,
+    value: "background-go",
   },
   {
     name: `${chalk.bold("background-python")} — Python HTTP backend service`,
     short: "bp",
-    value: "background-python" as TemplateType,
+    value: "background-python",
   },
   {
     name: `${chalk.bold("background-node")}  — Node.js backend service (with start/stop)`,
     short: "bn",
-    value: "background-node" as TemplateType,
+    value: "background-node",
+  },
+  // web 模板
+  {
+    name: `${chalk.bold("web-php")}       — PHP web interface (DSM Web Station)`,
+    short: "wp",
+    value: "web-php",
+  },
+  {
+    name: `${chalk.bold("web-html")}      — Static HTML/CSS/JS interface`,
+    short: "wh",
+    value: "web-html",
+  },
+  {
+    name: `${chalk.bold("web-python")}    - Python web interface`,
+    short: "wp",
+    value: "web-python",
   },
 ];
 
