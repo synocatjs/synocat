@@ -1,0 +1,30 @@
+[package]
+name = "synocat-check"
+version = "1.0.0"
+edition = "2024"
+authors = ["Synology Community"]
+description = "CLI scaffold tool for Synology DSM 7 packages - Installation confirmation"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/synology/synocat"
+
+[dependencies]
+termion = "4.0"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+
+[profile.dev]
+opt-level = 0
+debug = true
+
+[package.metadata.deb]
+maintainer = "Synology Community <community@synology.com>"
+copyright = "2024, Synology Community"
+license = "MIT"
+depends = "$auto"
+section = "devel"
+priority = "optional"
