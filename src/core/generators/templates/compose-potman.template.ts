@@ -72,6 +72,7 @@ esac`;
 
   private readme(cfg: ScaffoldConfig): string {
     const name = cfg.package.toLowerCase();
+    console.log(name);
     const port = cfg.adminport ?? '8080';
     
     return `# ${cfg.package}

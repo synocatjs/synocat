@@ -2,7 +2,24 @@ import type { InfoConfig } from './dsm.type';
 
 // ─── Template types ───────────────────────────────────────────────────────────
 
-export type TemplateType = 'minimal' | 'node-service' | 'vue-desktop' | 'docker';
+export type TemplateType = 
+| 'minimal-app'
+| 'minimal-server' 
+| 'background-go' 
+| 'background-node' 
+| 'background-python' 
+| 'cli-c_cpp' 
+| 'cli-rust' 
+| 'cli-other' 
+| 'container-docker'
+| 'container-potman'
+| 'desktop-html'
+| 'desktop-iframe'
+| 'desktop-php'
+| 'desktop-vue'
+| 'web-php'
+| 'web-python'
+| 'web-js_ts';
 
 export type ResourceShorthand =
   | 'port'

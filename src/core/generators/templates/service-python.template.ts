@@ -142,6 +142,7 @@ if __name__ == '__main__':
 
   private startScript(cfg: ScaffoldConfig): string {
     const name = cfg.package.toLowerCase();
+    console.log(name);
     
     return `#!/bin/bash
 # ${cfg.package} - Python Service Start Script

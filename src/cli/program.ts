@@ -48,7 +48,7 @@ export function buildProgram(version: string): Command {
       chalk.gray('Synology DSM 7.2.2 Package Scaffold Generator'),
     )
     .helpOption(false)
-    .addHelpCommand(false);
+    .helpCommand(false);
 
   // ── create ──────────────────────────────────────────────────────────────
   withCommon(

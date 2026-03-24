@@ -9,6 +9,7 @@ export class IframeTemplate implements IScaffoldTemplate {
       { path: 'src/index.html', content: this.entryPoint(cfg) },
       { path: 'src/style.css', content: this.styles(cfg) },
       { path: 'src/README.md', content: this.readme(cfg) },
+      {path: 'src/script.js',content: this.script(cfg)},
     ];
   }
 
@@ -358,6 +359,11 @@ body {
 }`;
   }
 
+  /**
+   * 生成 iframe 查看器的脚本代码
+   * @param cfg - 脚手架配置对象，包含包名等信息
+   * @returns 返回 iframe 查看器的完整脚本代码字符串
+   */
   private script(cfg: ScaffoldConfig): string {
     return `// ${cfg.package} - Iframe Viewer Script
 class IframeViewer {

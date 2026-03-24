@@ -97,6 +97,19 @@ npm test             # Run tests
 npm run test:coverage# Coverage report
 ```
 
+```bash
+npm link
+
+npm unlink
+npm uninstall -g synocat
+npm uninstall -g synopkg
+sudo npm unlink -g synocat
+```
+
+```bash
+which snc 
+```
+
 ## 📖 References
 
 - [DSM Developer Guide](https://help.synology.com/developer-guide/)
