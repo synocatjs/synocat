@@ -5,7 +5,7 @@
   "main": "dist/cli/index.js",
   "bin": {
     "synocat": "dist/cli/index.js",
-    "synopkg": "dist/cli/index.js"
+    "snc": "dist/cli/index.js"
   },
   "scripts": {
     "build": "tsc",

@@ -49,15 +49,6 @@ npm install -g synocat
 npx synocat
 ```
 
-```bash
-npm link
-
-npm unlink
-npm uninstall -g synocat
-npm uninstall -g synopkg
-sudo npm unlink -g synocat
-```
-
 ## Commands
 
 ```bash
