@@ -172,8 +172,8 @@ export function buildProgram(version: string): Command {
     program
       .command('compile [project-dir]')
       .description('Compile package using Synology toolchain')
-      .option('-p, --platform <platform>',   'Target platform', 'auto')
-      .option('-d, --dsm-version <version>', 'DSM version',     'auto')
+      .option('-p, --platform <platform>',   'Target platform')
+      .option('-d, --dsm-version <version>', 'DSM version'  )
       .option('--pkgscript-ng <path>',       'pkgscripts-ng directory')
       .option('--clean',   'Clean build')
       .option('--verbose', 'Verbose output'),
