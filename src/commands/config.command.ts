@@ -60,7 +60,7 @@ export async function updateShellConfig(key: string, value: string): Promise<voi
   console.log(chalk.yellow(`  Run: source ${rcFile} or restart your terminal`));
 }
 
-// ── set 命令 ────────────────────────────────────────────────────────────────────
+// ── config 命令 ────────────────────────────────────────────────────────────────────
 
 export async function setCommand(key: string, value: string, opts: { global?: boolean; env?: boolean }): Promise<void> {
   const validKeys = ['pkgscriptsNg', 'defaultPlatform', 'defaultDsmVersion'];

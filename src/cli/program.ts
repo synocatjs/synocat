@@ -12,7 +12,7 @@ import { compileCommand }  from '../commands/compile.command';
 import { updateCommand }   from '../commands/update.command';
 import { showHelp, showCommandHelp } from '../commands/help.command';
 import type { TemplateType } from '../types/';
-import { getCommand, setCommand, unsetCommand, listCommand } from '../commands/set.command';
+import { getCommand, setCommand, unsetCommand, listCommand } from '../commands/config.command';
 
 
 // ── Shared option injection ───────────────────────────────────────────────────
@@ -55,19 +55,19 @@ export function buildProgram(version: string): Command {
     .helpCommand(false);
 
   // ── set 命令组 ──────────────────────────────────────────────────────────────
-  const setCmd = program
-    .command('set')
+  const configCmd = program
+    .command('config')
     .description('Manage configuration')
     .helpOption(false);
 
-  setCmd
+  configCmd
     .command('get <key>')
     .description('Get configuration value')
     .action(async (key: string) => {
       await getCommand(key);
     });
 
-  setCmd
+  configCmd
     .command('set <key> <value>')
     .description('Set configuration value')
     .option('-g, --global', 'Save to global config file')
@@ -83,14 +83,14 @@ export function buildProgram(version: string): Command {
       await setCommand(key, value, opts);
     });
 
-  setCmd
+  configCmd
     .command('unset <key>')
     .description('Remove configuration value')
     .action(async (key: string) => {
       await unsetCommand(key);
     });
 
-  setCmd
+  configCmd
     .command('list')
     .description('List all configuration')
     .action(async () => {

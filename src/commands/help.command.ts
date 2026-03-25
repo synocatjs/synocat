@@ -164,14 +164,14 @@ ${chalk.yellow.bold('EXAMPLES:')}
   ${chalk.gray('synocat compile /path/to/pkgscripts-ng /path/to/my-pkg')}
   ${chalk.gray('synocat compile /path/to/pkgscripts-ng /path/to/my-pkg -p braswell -d 7.2')}
 `,
-set:`
-${chalk.cyan('🐈  synocat set')} — Manage configuration
+config:`
+${chalk.cyan('🐈  synocat config')} — Manage configuration
 
 ${chalk.yellow.bold('USAGE:')}
-  ${chalk.gray('synocat set list')}
-  ${chalk.gray('synocat set get <key>')}
-  ${chalk.gray('synocat set set <key> <value> [options]')}
-  ${chalk.gray('synocat set unset <key>')}
+  ${chalk.gray('synocat config list')}
+  ${chalk.gray('synocat config get <key>')}
+  ${chalk.gray('synocat config set <key> <value> [options]')}
+  ${chalk.gray('synocat config unset <key>')}
 
 ${chalk.yellow.bold('KEYS:')}
   ${chalk.green('pkgscriptsNg')}        Path to Synology pkgscripts-ng directory
@@ -183,12 +183,12 @@ ${chalk.yellow.bold('OPTIONS:')}
   ${chalk.green('-e, --env')}           Add to shell config (.bashrc/.zshrc) as environment variable
 
 ${chalk.yellow.bold('EXAMPLES:')}
-  ${chalk.gray('synocat set list')}
-  ${chalk.gray('synocat set get pkgscriptsNg')}
-  ${chalk.gray('synocat set set pkgscriptsNg /path/to/pkgscripts-ng --global')}
-  ${chalk.gray('synocat set set pkgscriptsNg /path/to/pkgscripts-ng --env')}
-  ${chalk.gray('synocat set unset pkgscriptsNg')}
-  ${chalk.gray('synocat set set defaultPlatform r1000 --global')}
+  ${chalk.gray('synocat config list')}
+  ${chalk.gray('synocat config get pkgscriptsNg')}
+  ${chalk.gray('synocat config set pkgscriptsNg /path/to/pkgscripts-ng --global')}
+  ${chalk.gray('synocat config set pkgscriptsNg /path/to/pkgscripts-ng --env')}
+  ${chalk.gray('synocat config unset pkgscriptsNg')}
+  ${chalk.gray('synocat config set defaultPlatform r1000 --global')}
 
 ${chalk.yellow.bold('CONFIGURATION PRIORITY:')}
   1. Command line options (--pkgscript-ng)
