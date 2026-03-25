@@ -1,12 +1,9 @@
 import path from 'node:path';
-import { exec } from 'node:child_process';
-import { promisify } from 'node:util';
+import { spawn } from 'node:child_process';
 import chalk from 'chalk';
 import ora from 'ora';
 import fsExtra from 'fs-extra';
 import os from 'node:os';
-
-const execAsync = promisify(exec);
 
 export interface CompileOptions {
   platform?:   string;
@@ -42,7 +39,6 @@ async function resolvePkgScriptsNg(
   cmdPath?: string,
   projectPath?: string,
 ): Promise<string | null> {
-  // 1. 命令行参数优先
   if (cmdPath) {
     const resolved = path.resolve(cmdPath);
     if (await fsExtra.pathExists(path.join(resolved, 'PkgCreate.py'))) {
@@ -50,7 +46,6 @@ async function resolvePkgScriptsNg(
     }
   }
   
-  // 2. 全局配置文件
   const config = await readGlobalConfig();
   if (config.pkgscriptsNg) {
     const resolved = path.resolve(config.pkgscriptsNg);
@@ -59,7 +54,6 @@ async function resolvePkgScriptsNg(
     }
   }
   
-  // 3. 环境变量
   const envPath = process.env.SYNOLOGY_PKGSCRIPTS_NG;
   if (envPath) {
     const resolved = path.resolve(envPath);
@@ -68,7 +62,6 @@ async function resolvePkgScriptsNg(
     }
   }
   
-  // 4. 从项目目录向上查找
   if (projectPath) {
     let current = path.resolve(projectPath);
     for (let i = 0; i < 5; i++) {
@@ -82,7 +75,6 @@ async function resolvePkgScriptsNg(
     }
   }
   
-  // 5. 常见默认位置
   const commonPaths = [
     '/opt/pkgscripts-ng',
     '/usr/local/pkgscripts-ng',
@@ -115,10 +107,7 @@ export async function compileCommand(
 ): Promise<void> {
   console.log(chalk.cyan('\n🔨 Synology Package Compiler\n'));
 
-  // 使用绝对路径
   const projectPath = path.resolve(projectDir);
-
-  // ── 获取 pkgscripts-ng 路径（传入 projectPath 用于向上查找）─────────────────
   const pkgScriptPath = await resolvePkgScriptsNg(opts.pkgscriptNg, projectPath);
 
   if (!pkgScriptPath) {
@@ -127,14 +116,9 @@ export async function compileCommand(
     console.log(chalk.gray('  1. Specify with --pkgscript-ng /path/to/pkgscripts-ng'));
     console.log(chalk.gray('  2. Set environment: export SYNOLOGY_PKGSCRIPTS_NG=/path/to/pkgscripts-ng'));
     console.log(chalk.gray('  3. Add to ~/.synocat/config.json: { "pkgscriptsNg": "/path/to/pkgscripts-ng" }'));
-    console.log(chalk.gray('  4. Place pkgscripts-ng in common locations:'));
-    console.log(chalk.gray('     - ~/toolkit/pkgscripts-ng'));
-    console.log(chalk.gray('     - ~/Documents/toolkit/pkgscripts-ng'));
     process.exitCode = 1;
     return;
   }
-
-  // ── Validation ─────────────────────────────────────────────────────────
 
   if (!await fsExtra.pathExists(projectPath)) {
     console.error(chalk.red(`Project directory not found: ${projectPath}`));
@@ -142,33 +126,15 @@ export async function compileCommand(
     return;
   }
   
-  if (!await fsExtra.pathExists(path.join(projectPath, 'INFO.sh'))) {
+  if (!await fsExtra.pathExists(path.join(projectPath, 'INFO'))) {
     console.error(chalk.red(`INFO file not found in: ${projectPath}`));
     console.log(chalk.yellow('This does not look like a valid Synology package project'));
     process.exitCode = 1;
     return;
   }
 
-  if (!await fsExtra.pathExists(path.join(projectPath, 'SynoBuildConf/build'))) {
-    console.error(chalk.red(`build file not found in: ${projectPath}`));
-    console.log(chalk.yellow('This does not look like a valid Synology package project'));
-    process.exitCode = 1;
-    return;
-  }
-
-   if (!await fsExtra.pathExists(path.join(projectPath, 'SynoBuildConf/install'))) {
-    console.error(chalk.red(`build file not found in: ${projectPath}`));
-    console.log(chalk.yellow('This does not look like a valid Synology package project'));
-    process.exitCode = 1;
-    return;
-  }
-
-  // ── 获取包名 ───────────────────────────────────────────────────────────────
-
   const packageName = await getPackageName(projectPath);
   console.log(chalk.gray(`📦 Package name: ${chalk.cyan(packageName)}`));
-
-  // ── 准备 source 目录 ───────────────────────────────────────────────────────
 
   const toolkitRoot = path.dirname(pkgScriptPath);
   const sourceDir = path.join(toolkitRoot, 'source');
@@ -178,44 +144,38 @@ export async function compileCommand(
   console.log(chalk.gray(`📁 Source directory: ${sourceDir}`));
   console.log(chalk.gray(`📁 Target: ${targetSourceDir}`));
 
-  // 确保 source 目录存在
   await fsExtra.ensureDir(sourceDir);
 
-  // 复制项目到 source 目录
-  const spinner = ora(`Copying project to ${targetSourceDir}...`).start();
-  
+  // 复制项目
+  const copySpinner = ora(`Copying project to ${targetSourceDir}...`).start();
   try {
-    // 如果目标已存在
     if (await fsExtra.pathExists(targetSourceDir)) {
       if (opts.clean) {
-        spinner.text = `Removing existing ${targetSourceDir}...`;
+        copySpinner.text = `Removing existing ${targetSourceDir}...`;
         await fsExtra.remove(targetSourceDir);
-        spinner.text = `Copying project to ${targetSourceDir}...`;
+        copySpinner.text = `Copying project to ${targetSourceDir}...`;
         await fsExtra.copy(projectPath, targetSourceDir);
-        spinner.succeed(chalk.green(`✓ Project copied to ${targetSourceDir}`));
+        copySpinner.succeed(chalk.green(`✓ Project copied to ${targetSourceDir}`));
       } else {
-        spinner.warn(chalk.yellow(`Directory ${targetSourceDir} already exists`));
+        copySpinner.warn(chalk.yellow(`Directory ${targetSourceDir} already exists`));
         console.log(chalk.gray('  Use --clean to remove and re-copy'));
-        // 继续使用现有目录
-        spinner.succeed(chalk.green(`✓ Using existing directory: ${targetSourceDir}`));
+        copySpinner.succeed(chalk.green(`✓ Using existing directory: ${targetSourceDir}`));
       }
     } else {
       await fsExtra.copy(projectPath, targetSourceDir);
-      spinner.succeed(chalk.green(`✓ Project copied to ${targetSourceDir}`));
+      copySpinner.succeed(chalk.green(`✓ Project copied to ${targetSourceDir}`));
     }
   } catch (err) {
-    spinner.fail(chalk.red('Failed to copy project'));
+    copySpinner.fail(chalk.red('Failed to copy project'));
     console.error(chalk.red(err instanceof Error ? err.message : String(err)));
     process.exitCode = 1;
     return;
   }
 
-  // ── 确定平台和 DSM 版本 ────────────────────────────────────────────────────
-
+  // 确定平台和 DSM 版本
   let platform = opts.platform ?? 'auto';
   let dsmVersion = opts.dsmVersion ?? 'auto';
 
-  // 从全局配置读取默认值
   const config = await readGlobalConfig();
   if (platform === 'auto' && config.defaultPlatform) {
     platform = config.defaultPlatform;
@@ -235,8 +195,6 @@ export async function compileCommand(
     if (dsmVersion !== 'auto') console.log(chalk.gray(`🔍 Auto-detected DSM version: ${dsmVersion}`));
   }
 
-  // ── Summary ─────────────────────────────────────────────────────────────
-
   console.log(chalk.gray('\n📋 Configuration:'));
   console.log(chalk.gray(`  pkgscripts-ng : ${pkgScriptPath}`));
   console.log(chalk.gray(`  project       : ${projectPath}`));
@@ -247,93 +205,115 @@ export async function compileCommand(
   console.log(chalk.gray(`  verbose       : ${opts.verbose ? 'yes' : 'no'}`));
   console.log('');
 
-  // ── 执行编译 ────────────────────────────────────────────────────────────────
+  // ── 执行编译（实时显示日志）──────────────────────────────────────────────────
 
-  const compileSpinner = ora('Starting compilation...').start();
+  console.log(chalk.cyan('🚀 Starting compilation...\n'));
 
-  try {
-    // 构建命令
-    let cmd = `sudo ./PkgCreate.py -v ${dsmVersion} -p ${platform} -c ${packageName}`;
-    
-    if (opts.verbose) {
-      cmd += ` --verbose`;
-    }
+  const cmd = `sudo ./PkgCreate.py -v ${dsmVersion} -p ${platform} -c ${packageName}`;
+  if (opts.verbose) {
+    console.log(chalk.gray(`Executing: ${cmd}\n`));
+  }
 
-    compileSpinner.text = 'Running Synology compiler...';
-    if (opts.verbose) console.log(chalk.gray(`\nExecuting: ${cmd}\n`));
-
-    const { stdout, stderr } = await execAsync(cmd, {
+  return new Promise((resolve, reject) => {
+    const proc = spawn('sudo', [
+      './PkgCreate.py',
+      '-v', dsmVersion,
+      '-p', platform,
+      '-c', packageName,
+    ], {
       cwd: pkgScriptPath,
-      maxBuffer: 1024 * 1024 * 10,
+      stdio: 'pipe',
     });
 
-    if (stdout) {
-      if (opts.verbose) {
-        process.stdout.write(stdout);
-      } else {
-        const important = stdout.split('\n').filter(
-          (l) => /Building|Compiling|Success|Error|completed|failed/i.test(l),
-        );
-        important.forEach((l) => console.log(chalk.gray(l)));
-      }
-    }
+    let stdout = '';
+    let stderr = '';
+    let hasError = false;
 
-    if (stderr?.trim()) {
-      if (stderr.includes('warning') || stderr.includes('WARNING')) {
-        compileSpinner.warn(chalk.yellow('Compilation completed with warnings'));
-        console.error(chalk.yellow(stderr));
-      } else {
-        compileSpinner.fail(chalk.red('Compilation failed'));
-        console.error(chalk.red(stderr));
-        process.exitCode = 1;
-        return;
-      }
-    }
-
-    compileSpinner.succeed(chalk.green('✓ Compilation completed successfully'));
-
-    // ── 显示输出文件 ──────────────────────────────────────────────────────────
-
-    const buildEnvDir = path.join(toolkitRoot, 'build_env');
-    const platformDir = `ds.${platform}-${dsmVersion}`;
-    const outputDir = path.join(buildEnvDir, platformDir, 'image', 'packages');
-    
-    if (await fsExtra.pathExists(outputDir)) {
-      console.log(chalk.green(`\n📦 Output directory: ${outputDir}`));
-      const files = await fsExtra.readdir(outputDir);
-      const spkFiles = files.filter(f => f.endsWith('.spk'));
+    // 实时显示 stdout
+    proc.stdout.on('data', (data: Buffer) => {
+      const output = data.toString();
+      stdout += output;
       
-      if (spkFiles.length > 0) {
-        console.log(chalk.green('\n  Generated SPK files:'));
-        for (const file of spkFiles) {
-          const stat = await fsExtra.stat(path.join(outputDir, file));
-          const size = stat.size > 1024 * 1024
-            ? `${(stat.size / (1024 * 1024)).toFixed(2)} MB`
-            : `${(stat.size / 1024).toFixed(2)} KB`;
-          console.log(chalk.gray(`    ✓ ${file} (${size})`));
-        }
-      } else {
-        console.log(chalk.yellow('\n  No SPK files found in output directory'));
+      // 实时输出到控制台
+      process.stdout.write(chalk.gray(output));
+      
+      // 检测错误
+      if (output.includes('[Error]') || output.includes('failed')) {
+        hasError = true;
       }
-    } else {
-      console.log(chalk.yellow(`\n  Output directory not found: ${outputDir}`));
-    }
-    console.log('');
+    });
 
-  } catch (err: unknown) {
-    compileSpinner.fail(chalk.red('Compilation failed'));
-    console.error(chalk.red(err instanceof Error ? err.message : String(err)));
-    if (opts.verbose && err instanceof Error) {
-      console.error(chalk.gray(err.stack ?? ''));
-    }
-    console.log(chalk.yellow('\n💡 Troubleshooting:'));
-    console.log(chalk.gray('  1. Check Python 3 is installed: python3 --version'));
-    console.log(chalk.gray('  2. Verify pkgscripts-ng contains PkgCreate.py'));
-    console.log(chalk.gray('  3. Ensure the project has a valid INFO file'));
-    console.log(chalk.gray('  4. Ensure you have sudo privileges'));
-    console.log(chalk.gray('  5. Try --verbose for more details'));
-    process.exitCode = 1;
-  }
+    // 实时显示 stderr
+    proc.stderr.on('data', (data: Buffer) => {
+      const output = data.toString();
+      stderr += output;
+      
+      // 实时输出到控制台
+      if (output.includes('warning') || output.includes('WARNING')) {
+        process.stdout.write(chalk.yellow(output));
+      } else {
+        process.stdout.write(chalk.red(output));
+      }
+    });
+
+    proc.on('close', (code) => {
+      console.log(''); // 空行分隔
+      
+      if (code !== 0 || hasError) {
+        console.log(chalk.red('\n❌ Compilation failed!'));
+        
+        // 显示关键错误信息
+        const errorLines = stdout.split('\n').filter(l => 
+          l.includes('[Error]') || l.includes('failed') || l.includes('error')
+        );
+        if (errorLines.length > 0) {
+          console.log(chalk.red('\n  Error summary:'));
+          errorLines.forEach(l => console.log(chalk.red(`    ${l}`)));
+        }
+        
+        console.log(chalk.yellow('\n💡 Troubleshooting:'));
+        console.log(chalk.gray('  1. Check the error messages above'));
+        console.log(chalk.gray('  2. Verify your package structure'));
+        console.log(chalk.gray('  3. Check if INFO.sh has execute permission'));
+        console.log(chalk.gray('  4. Try --verbose for more details'));
+        
+        process.exitCode = 1;
+        reject(new Error(`Compilation failed with code ${code}`));
+      } else {
+        console.log(chalk.green('\n✅ Compilation completed successfully!'));
+        
+        // 显示输出文件
+        const buildEnvDir = path.join(toolkitRoot, 'build_env');
+        const platformDir = `ds.${platform}-${dsmVersion}`;
+        const outputDir = path.join(buildEnvDir, platformDir, 'image', 'packages');
+        
+        if (fsExtra.pathExistsSync(outputDir)) {
+          const files = fsExtra.readdirSync(outputDir);
+          const spkFiles = files.filter(f => f.endsWith('.spk'));
+          
+          if (spkFiles.length > 0) {
+            console.log(chalk.green('\n📦 Generated SPK files:'));
+            for (const file of spkFiles) {
+              const stat = fsExtra.statSync(path.join(outputDir, file));
+              const size = stat.size > 1024 * 1024
+                ? `${(stat.size / (1024 * 1024)).toFixed(2)} MB`
+                : `${(stat.size / 1024).toFixed(2)} KB`;
+              console.log(chalk.gray(`    ✓ ${file} (${size})`));
+            }
+            console.log(chalk.gray(`\n  Location: ${outputDir}\n`));
+          }
+        }
+        
+        resolve();
+      }
+    });
+
+    proc.on('error', (err) => {
+      console.log(chalk.red(`\n❌ Failed to start compiler: ${err.message}`));
+      process.exitCode = 1;
+      reject(err);
+    });
+  });
 }
 
 async function detectPlatform(projectPath: string): Promise<string> {
