@@ -91,14 +91,56 @@ async function resolvePkgScriptsNg(
   return null;
 }
 
-async function getPackageName(projectPath: string): Promise<string> {
-  const infoPath = path.join(projectPath, 'INFO');
-  if (await fsExtra.pathExists(infoPath)) {
-    const content = await fsExtra.readFile(infoPath, 'utf-8');
-    const match = content.match(/package="([^"]+)"/);
-    if (match?.[1]) return match[1];
+/**
+ * 检查项目必要文件并获取包名
+ * 必须文件: INFO.sh 和 SynoBuildConf/build, SynoBuildConf/install
+ */
+async function validateAndGetPackageName(projectPath: string): Promise<string> {
+  // 检查必要文件
+  const requiredFiles = [
+    'INFO.sh',
+    'SynoBuildConf/build',
+    'SynoBuildConf/install'
+  ];
+  
+  const missingFiles: string[] = [];
+  
+  for (const file of requiredFiles) {
+    const filePath = path.join(projectPath, file);
+    if (!await fsExtra.pathExists(filePath)) {
+      missingFiles.push(file);
+    }
   }
-  return path.basename(projectPath);
+  
+  if (missingFiles.length > 0) {
+    console.error(chalk.red(`Missing required files:`));
+    for (const file of missingFiles) {
+      console.error(chalk.red(`  ✗ ${file}`));
+    }
+    console.log(chalk.yellow('\n💡 A valid Synology package project must have:'));
+    console.log(chalk.gray('  • INFO.sh - Package metadata generator'));
+    console.log(chalk.gray('  • SynoBuildConf/build - Build script'));
+    console.log(chalk.gray('  • SynoBuildConf/install - Install script'));
+    process.exitCode = 1;
+    throw new Error('Invalid package structure');
+  }
+  
+  // 从 INFO.sh 获取包名
+  const infoShPath = path.join(projectPath, 'INFO.sh');
+  try {
+    const content = await fsExtra.readFile(infoShPath, 'utf-8');
+    const match = content.match(/package="([^"]+)"/);
+    if (match?.[1]) {
+      return match[1];
+    }
+  } catch (err) {
+    console.error(chalk.red(`Failed to read INFO.sh: ${err}`));
+  }
+  
+  // 如果无法从 INFO.sh 获取，使用目录名
+  const dirName = path.basename(projectPath);
+  console.log(chalk.yellow(`⚠️  Could not detect package name from INFO.sh, using directory name: ${dirName}`));
+  return dirName;
 }
 
 export async function compileCommand(
@@ -126,14 +168,14 @@ export async function compileCommand(
     return;
   }
   
-  if (!await fsExtra.pathExists(path.join(projectPath, 'INFO'))) {
-    console.error(chalk.red(`INFO file not found in: ${projectPath}`));
-    console.log(chalk.yellow('This does not look like a valid Synology package project'));
-    process.exitCode = 1;
+  // 验证项目结构并获取包名
+  let packageName: string;
+  try {
+    packageName = await validateAndGetPackageName(projectPath);
+  } catch {
     return;
   }
-
-  const packageName = await getPackageName(projectPath);
+  
   console.log(chalk.gray(`📦 Package name: ${chalk.cyan(packageName)}`));
 
   const toolkitRoot = path.dirname(pkgScriptPath);
@@ -256,7 +298,7 @@ export async function compileCommand(
       }
     });
 
-    proc.on('close', (code) => {
+    proc.on('close', async (code) => {
       console.log(''); // 空行分隔
       
       if (code !== 0 || hasError) {
@@ -287,14 +329,14 @@ export async function compileCommand(
         const platformDir = `ds.${platform}-${dsmVersion}`;
         const outputDir = path.join(buildEnvDir, platformDir, 'image', 'packages');
         
-        if (fsExtra.pathExistsSync(outputDir)) {
-          const files = fsExtra.readdirSync(outputDir);
+        if (await fsExtra.pathExists(outputDir)) {
+          const files = await fsExtra.readdir(outputDir);
           const spkFiles = files.filter(f => f.endsWith('.spk'));
           
           if (spkFiles.length > 0) {
             console.log(chalk.green('\n📦 Generated SPK files:'));
             for (const file of spkFiles) {
-              const stat = fsExtra.statSync(path.join(outputDir, file));
+              const stat = await fsExtra.stat(path.join(outputDir, file));
               const size = stat.size > 1024 * 1024
                 ? `${(stat.size / (1024 * 1024)).toFixed(2)} MB`
                 : `${(stat.size / 1024).toFixed(2)} KB`;
