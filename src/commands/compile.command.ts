@@ -142,8 +142,22 @@ export async function compileCommand(
     return;
   }
   
-  if (!await fsExtra.pathExists(path.join(projectPath, 'INFO'))) {
+  if (!await fsExtra.pathExists(path.join(projectPath, 'INFO.sh'))) {
     console.error(chalk.red(`INFO file not found in: ${projectPath}`));
+    console.log(chalk.yellow('This does not look like a valid Synology package project'));
+    process.exitCode = 1;
+    return;
+  }
+
+  if (!await fsExtra.pathExists(path.join(projectPath, 'SynoBuildConf/build'))) {
+    console.error(chalk.red(`build file not found in: ${projectPath}`));
+    console.log(chalk.yellow('This does not look like a valid Synology package project'));
+    process.exitCode = 1;
+    return;
+  }
+
+   if (!await fsExtra.pathExists(path.join(projectPath, 'SynoBuildConf/install'))) {
+    console.error(chalk.red(`build file not found in: ${projectPath}`));
     console.log(chalk.yellow('This does not look like a valid Synology package project'));
     process.exitCode = 1;
     return;
