@@ -15,6 +15,7 @@ import { TEMPLATE_REGISTRY } from "../core/generators/templates/registry";
 import { generateINFO } from "../core/generators/info.generator";
 
 import { generateLogoAsPNG } from "../core/generators/logo.generator";
+import { generateBuild, generateInstall } from "../core/generators/synobuildconf.generator";
 
 const LIFECYCLE_SCRIPTS = [
   "preinst",
@@ -51,6 +52,9 @@ export class ScaffoldService {
     // ── Common files ───────────────────────────────────────────────────────
     write("INFO.sh", generateINFO(cfg));
     write("conf/privilege", generatePrivilege());
+    write("SynoBuildConf/build",generateBuild(cfg))
+    write("SynoBuildConf/install",generateInstall(cfg))
+
 
     if (cfg.hasResource && cfg.resourceType && cfg.resourceType !== "none") {
       write(
