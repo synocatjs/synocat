@@ -388,3 +388,52 @@ export async function compileCommand(
     });
   });
 }
+
+// 获取可用的平台列表
+async function getAvailablePlatforms(pkgScriptPath?: string): Promise<Map<string, string[]>> {
+  const platforms = new Map<string, string[]>();
+  
+  // 如果没有指定路径，尝试查找
+  const toolkitRoot = pkgScriptPath 
+    ? path.dirname(pkgScriptPath)
+    : await findToolkitRoot();
+  
+  if (!toolkitRoot) return platforms;
+  
+  const buildEnvDir = path.join(toolkitRoot, 'build_env');
+  if (!await fsExtra.pathExists(buildEnvDir)) return platforms;
+  
+  const dirs = await fsExtra.readdir(buildEnvDir);
+  const pattern = /^ds\.([^.]+)-(\d+\.\d+)$/;
+  
+  for (const dir of dirs) {
+    const match = dir.match(pattern);
+    if (match) {
+      const platform = match[1];
+      const version = match[2];
+      if (!platforms.has(platform)) {
+        platforms.set(platform, []);
+      }
+      platforms.get(platform)!.push(version);
+    }
+  }
+  
+  return platforms;
+}
+
+async function findToolkitRoot(): Promise<string | undefined> {
+  const commonPaths = [
+    path.join(os.homedir(), 'toolkit'),
+    path.join(os.homedir(), 'Documents', 'toolkit'),
+  ];
+  for (const candidate of commonPaths) {
+    if (await fsExtra.pathExists(candidate)) {
+      return candidate;
+    }
+  }
+  return undefined;
+}
+
+
+
+export { getAvailablePlatforms, resolvePkgScriptsNg };

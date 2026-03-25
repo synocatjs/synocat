@@ -12,8 +12,9 @@ import { compileCommand }  from '../commands/compile.command';
 import { updateCommand }   from '../commands/update.command';
 import { showHelp, showCommandHelp } from '../commands/help.command';
 import type { TemplateType } from '../types/';
-import { getCommand, setCommand, unsetCommand, listCommand } from '../commands/config.command';
-
+import { getCommand, setCommand, unsetCommand } from '../commands/config.command';
+    // 在 import 部分添加
+import { listCommand } from '../commands/list.command';
 
 // ── Shared option injection ───────────────────────────────────────────────────
 
@@ -53,6 +54,72 @@ export function buildProgram(version: string): Command {
     )
     .helpOption(false)
     .helpCommand(false);
+
+
+
+// 在 buildProgram 函数中添加 list 命令
+// ── list 命令 ──────────────────────────────────────────────────────────────
+const listCmd = program
+  .command('list')
+  .description('List available resources')
+  .helpOption(false);
+
+listCmd
+  .command('platforms')
+  .description('List available build platforms')
+  .option('--pkgscript-ng <path>', 'pkgscripts-ng directory')
+  .action(async (opts: { pkgscriptNg?: string }) => {
+    await listCommand('platforms', { pkgscriptNg: opts.pkgscriptNg });
+  });
+
+listCmd
+  .command('arch')
+  .description('List supported architectures')
+  .action(async () => {
+    await listCommand('arch');
+  });
+
+listCmd
+  .command('templates')
+  .description('List available package templates')
+  .action(async () => {
+    await listCommand('templates');
+  });
+
+listCmd
+  .command('resources')
+  .description('List available resource types')
+  .action(async () => {
+    await listCommand('resources');
+  });
+
+listCmd
+  .command('packages')
+  .description('List available packages in source directory')
+  .option('--pkgscript-ng <path>', 'pkgscripts-ng directory')
+  .option('--project-dir <path>', 'Project directory for auto-detection')
+  .action(async (opts: { pkgscriptNg?: string; projectDir?: string }) => {
+    await listCommand('packages', { pkgscriptNg: opts.pkgscriptNg, projectDir: opts.projectDir });
+  });
+
+listCmd
+  .command('all')
+  .description('List all information')
+  .option('--pkgscript-ng <path>', 'pkgscripts-ng directory')
+  .option('--project-dir <path>', 'Project directory for auto-detection')
+  .action(async (opts: { pkgscriptNg?: string; projectDir?: string }) => {
+    await listCommand('all', { pkgscriptNg: opts.pkgscriptNg, projectDir: opts.projectDir });
+  });
+
+// 默认 list 命令（无参数时显示所有）
+program
+  .command('list')
+  .description('List all available resources')
+  .option('--pkgscript-ng <path>', 'pkgscripts-ng directory')
+  .option('--project-dir <path>', 'Project directory for auto-detection')
+  .action(async (opts: { pkgscriptNg?: string; projectDir?: string }) => {
+    await listCommand('all', { pkgscriptNg: opts.pkgscriptNg, projectDir: opts.projectDir });
+  });
 
   // ── set 命令组 ──────────────────────────────────────────────────────────────
   const configCmd = program
@@ -166,6 +233,8 @@ export function buildProgram(version: string): Command {
     if (handleCommon(opts, 'image', version)) return;
     await imageCommand(imgPath, { sizes: opts.sizes, output: opts.output });
   });
+
+
 
   // ── compile ───────────────────────────────────────────────────────────────
   withCommon(
