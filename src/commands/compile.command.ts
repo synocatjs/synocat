@@ -360,11 +360,30 @@ export async function compileCommand(
 
 async function detectPlatform(projectPath: string): Promise<string> {
   try {
+    // 从 INFO.sh 读取 arch 字段
+    const infoShPath = path.join(projectPath, 'INFO.sh');
+    if (await fsExtra.pathExists(infoShPath)) {
+      const content = await fsExtra.readFile(infoShPath, 'utf-8');
+      
+      // 匹配 arch="xxx"
+      let match = content.match(/arch="([^"]+)"/);
+      if (match?.[1]) {
+        const arch = match[1];
+        // 如果是 noarch，返回默认平台
+        if (arch === 'noarch') {
+          console.log(chalk.gray(`  Detected arch=noarch, using default platform`));
+          return 'auto';
+        }
+        return arch;
+      }
+    }
+    
+    // 从 INFO 文件读取作为备选
     const infoPath = path.join(projectPath, 'INFO');
     if (await fsExtra.pathExists(infoPath)) {
       const content = await fsExtra.readFile(infoPath, 'utf-8');
-      const m = content.match(/platform="([^"]+)"/);
-      if (m?.[1]) return m[1];
+      const match = content.match(/arch="([^"]+)"/);
+      if (match?.[1]) return match[1];
     }
   } catch { /* ignore */ }
   return 'auto';
@@ -372,11 +391,24 @@ async function detectPlatform(projectPath: string): Promise<string> {
 
 async function detectDsmVersion(projectPath: string): Promise<string> {
   try {
+    // 从 INFO.sh 读取 os_min_ver
+    const infoShPath = path.join(projectPath, 'INFO.sh');
+    if (await fsExtra.pathExists(infoShPath)) {
+      const content = await fsExtra.readFile(infoShPath, 'utf-8');
+      
+      // 匹配 os_min_ver="7.0-40000"，提取主版本号 7.0
+      const match = content.match(/os_min_ver="(\d+\.\d+)/);
+      if (match?.[1]) {
+        return match[1];
+      }
+    }
+    
+    // 从 INFO 文件读取作为备选
     const infoPath = path.join(projectPath, 'INFO');
     if (await fsExtra.pathExists(infoPath)) {
       const content = await fsExtra.readFile(infoPath, 'utf-8');
-      const m = content.match(/os_min_ver="(\d+\.\d+)/);
-      if (m?.[1]) return m[1];
+      const match = content.match(/os_min_ver="(\d+\.\d+)/);
+      if (match?.[1]) return match[1];
     }
   } catch { /* ignore */ }
   return 'auto';
