@@ -164,6 +164,41 @@ ${chalk.yellow.bold('EXAMPLES:')}
   ${chalk.gray('synocat compile /path/to/pkgscripts-ng /path/to/my-pkg')}
   ${chalk.gray('synocat compile /path/to/pkgscripts-ng /path/to/my-pkg -p braswell -d 7.2')}
 `,
+set:`
+${chalk.cyan('🐈  synocat set')} — Manage configuration
+
+${chalk.yellow.bold('USAGE:')}
+  ${chalk.gray('synocat set list')}
+  ${chalk.gray('synocat set get <key>')}
+  ${chalk.gray('synocat set set <key> <value> [options]')}
+  ${chalk.gray('synocat set unset <key>')}
+
+${chalk.yellow.bold('KEYS:')}
+  ${chalk.green('pkgscriptsNg')}        Path to Synology pkgscripts-ng directory
+  ${chalk.green('defaultPlatform')}     Default target platform (e.g., r1000, x86_64)
+  ${chalk.green('defaultDsmVersion')}   Default DSM version (e.g., 7.2)
+
+${chalk.yellow.bold('OPTIONS:')}
+  ${chalk.green('-g, --global')}        Save to global config file (~/.synocat/config.json)
+  ${chalk.green('-e, --env')}           Add to shell config (.bashrc/.zshrc) as environment variable
+
+${chalk.yellow.bold('EXAMPLES:')}
+  ${chalk.gray('synocat set list')}
+  ${chalk.gray('synocat set get pkgscriptsNg')}
+  ${chalk.gray('synocat set set pkgscriptsNg /path/to/pkgscripts-ng --global')}
+  ${chalk.gray('synocat set set pkgscriptsNg /path/to/pkgscripts-ng --env')}
+  ${chalk.gray('synocat set unset pkgscriptsNg')}
+  ${chalk.gray('synocat set set defaultPlatform r1000 --global')}
+
+${chalk.yellow.bold('CONFIGURATION PRIORITY:')}
+  1. Command line options (--pkgscript-ng)
+  2. Environment variables (SYNOLOGY_PKGSCRIPTS_NG)
+  3. Global config file (~/.synocat/config.json)
+  4. Auto-detection in common locations
+
+${chalk.yellow.bold('CONFIG FILE LOCATION:')}
+  ${chalk.gray('~/.synocat/config.json')}
+`
   };
 
   if (map[command]) {

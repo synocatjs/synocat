@@ -1,5 +1,7 @@
+
 import { Command } from 'commander';
 import chalk from 'chalk';
+
 import { createCommand }   from '../commands/create.command';
 import { validateCommand } from '../commands/validate.command';
 import { addCommand, AddType }      from '../commands/add.command';
@@ -10,6 +12,8 @@ import { compileCommand }  from '../commands/compile.command';
 import { updateCommand }   from '../commands/update.command';
 import { showHelp, showCommandHelp } from '../commands/help.command';
 import type { TemplateType } from '../types/';
+import { getCommand, setCommand, unsetCommand, listCommand } from '../commands/set.command';
+
 
 // ── Shared option injection ───────────────────────────────────────────────────
 
@@ -49,6 +53,49 @@ export function buildProgram(version: string): Command {
     )
     .helpOption(false)
     .helpCommand(false);
+
+  // ── set 命令组 ──────────────────────────────────────────────────────────────
+  const setCmd = program
+    .command('set')
+    .description('Manage configuration')
+    .helpOption(false);
+
+  setCmd
+    .command('get <key>')
+    .description('Get configuration value')
+    .action(async (key: string) => {
+      await getCommand(key);
+    });
+
+  setCmd
+    .command('set <key> <value>')
+    .description('Set configuration value')
+    .option('-g, --global', 'Save to global config file')
+    .option('-e, --env', 'Add to shell config (.bashrc/.zshrc)')
+    .action(async (key: string, value: string, opts: { global?: boolean; env?: boolean }) => {
+      if (!opts.global && !opts.env) {
+        console.log(chalk.yellow('Please specify either --global or --env'));
+        console.log(chalk.gray('  --global: Save to ~/.synocat/config.json'));
+        console.log(chalk.gray('  --env:    Add to .bashrc/.zshrc as environment variable'));
+        process.exitCode = 1;
+        return;
+      }
+      await setCommand(key, value, opts);
+    });
+
+  setCmd
+    .command('unset <key>')
+    .description('Remove configuration value')
+    .action(async (key: string) => {
+      await unsetCommand(key);
+    });
+
+  setCmd
+    .command('list')
+    .description('List all configuration')
+    .action(async () => {
+      await listCommand();
+    });
 
   // ── create ──────────────────────────────────────────────────────────────
   withCommon(
@@ -123,29 +170,34 @@ export function buildProgram(version: string): Command {
   // ── compile ───────────────────────────────────────────────────────────────
   withCommon(
     program
-      .command('compile [pkgscript-ng-dir] [project-dir]')
+      .command('compile [project-dir]')
       .description('Compile package using Synology toolchain')
       .option('-p, --platform <platform>',   'Target platform', 'auto')
       .option('-d, --dsm-version <version>', 'DSM version',     'auto')
+      .option('--pkgscript-ng <path>',       'pkgscripts-ng directory')
       .option('--clean',   'Clean build')
       .option('--verbose', 'Verbose output'),
     'compile',
   ).action(async (
-    ngDir: string | undefined,
     projDir: string | undefined,
-    opts: { help?: boolean; version?: boolean; platform?: string; dsmVersion?: string; clean?: boolean; verbose?: boolean },
+    opts: { 
+      help?: boolean; 
+      version?: boolean; 
+      platform?: string; 
+      dsmVersion?: string; 
+      pkgscriptNg?: string;
+      clean?: boolean; 
+      verbose?: boolean 
+    },
   ) => {
     if (handleCommon(opts, 'compile', version)) return;
-    if (!ngDir || !projDir) {
-      const missing = !ngDir ? 'pkgscript-ng directory' : 'project directory';
-      console.error(chalk.red(`Error: ${missing} is required`));
-      console.log(chalk.gray('Usage: synocat compile <pkgscript-ng-dir> <project-dir>'));
-      process.exitCode = 1;
-      return;
-    }
-    await compileCommand(ngDir, projDir, {
+    
+    const projectDir = projDir || '.';
+    
+    await compileCommand(projectDir, {
       platform:   opts.platform,
       dsmVersion: opts.dsmVersion,
+      pkgscriptNg: opts.pkgscriptNg,
       clean:      opts.clean,
       verbose:    opts.verbose,
     });

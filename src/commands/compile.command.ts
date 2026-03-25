@@ -4,44 +4,136 @@ import { promisify } from 'node:util';
 import chalk from 'chalk';
 import ora from 'ora';
 import fsExtra from 'fs-extra';
+import os from 'node:os';
 
 const execAsync = promisify(exec);
 
 export interface CompileOptions {
   platform?:   string;
   dsmVersion?: string;
+  pkgscriptNg?: string;  // 新增：命令行指定的路径
   clean?:      boolean;
   verbose?:    boolean;
 }
 
+// ── 配置管理 ───────────────────────────────────────────────────────────────────
+
+interface GlobalConfig {
+  pkgscriptsNg?: string;
+  defaultPlatform?: string;
+  defaultDsmVersion?: string;
+}
+
+function getConfigPath(): string {
+  return path.join(os.homedir(), '.synocat', 'config.json');
+}
+
+async function readGlobalConfig(): Promise<GlobalConfig> {
+  const configPath = getConfigPath();
+  if (await fsExtra.pathExists(configPath)) {
+    try {
+      return await fsExtra.readJSON(configPath);
+    } catch {
+      return {};
+    }
+  }
+  return {};
+}
+
+async function resolvePkgScriptsNg(
+  cmdPath?: string,
+  projectPath?: string,
+): Promise<string | null> {
+  // 1. 命令行参数优先
+  if (cmdPath) {
+    const resolved = path.resolve(cmdPath);
+    if (await fsExtra.pathExists(path.join(resolved, 'PkgCreate.py'))) {
+      return resolved;
+    }
+  }
+  
+  // 2. 全局配置文件
+  const config = await readGlobalConfig();
+  if (config.pkgscriptsNg) {
+    const resolved = path.resolve(config.pkgscriptsNg);
+    if (await fsExtra.pathExists(path.join(resolved, 'PkgCreate.py'))) {
+      return resolved;
+    }
+  }
+  
+  // 3. 环境变量
+  const envPath = process.env.SYNOLOGY_PKGSCRIPTS_NG;
+  if (envPath) {
+    const resolved = path.resolve(envPath);
+    if (await fsExtra.pathExists(path.join(resolved, 'PkgCreate.py'))) {
+      return resolved;
+    }
+  }
+  
+  // 4. 项目目录中查找
+  if (projectPath) {
+    let current = path.resolve(projectPath);
+    for (let i = 0; i < 5; i++) {
+      const candidate = path.join(current, 'pkgscripts-ng');
+      if (await fsExtra.pathExists(path.join(candidate, 'PkgCreate.py'))) {
+        return candidate;
+      }
+      const parent = path.dirname(current);
+      if (parent === current) break;
+      current = parent;
+    }
+  }
+  
+  // 5. 常见默认位置
+  const commonPaths = [
+    '/opt/pkgscripts-ng',
+    '/usr/local/pkgscripts-ng',
+    path.join(os.homedir(), 'toolkit', 'pkgscripts-ng'),
+    path.join(os.homedir(), 'Documents', 'toolkit', 'pkgscripts-ng'),
+  ];
+  
+  for (const candidate of commonPaths) {
+    if (await fsExtra.pathExists(path.join(candidate, 'PkgCreate.py'))) {
+      return candidate;
+    }
+  }
+  
+  return null;
+}
+
 export async function compileCommand(
-  pkgscriptNgDir: string,
-  projectDir:     string,
+  projectDir: string,
   opts: CompileOptions = {},
 ): Promise<void> {
   console.log(chalk.cyan('\n🔨 Synology Package Compiler\n'));
 
-  const pkgScriptPath = path.resolve(pkgscriptNgDir);
-  const projectPath   = path.resolve(projectDir);
+  const projectPath = path.resolve(projectDir);
 
-  // ── Validation ─────────────────────────────────────────────────────────
+  // ── 获取 pkgscripts-ng 路径 ────────────────────────────────────────────────
 
-  if (!await fsExtra.pathExists(pkgScriptPath)) {
-    console.error(chalk.red(`pkgscript-ng directory not found: ${pkgScriptPath}`));
+  const pkgScriptPath = await resolvePkgScriptsNg(opts.pkgscriptNg, projectPath);
+
+  if (!pkgScriptPath) {
+    console.error(chalk.red('pkgscripts-ng directory not found.'));
+    console.log(chalk.yellow('\n💡 To fix:'));
+    console.log(chalk.gray('  1. Specify with --pkgscript-ng /path/to/pkgscripts-ng'));
+    console.log(chalk.gray('  2. Set environment: export SYNOLOGY_PKGSCRIPTS_NG=/path/to/pkgscripts-ng'));
+    console.log(chalk.gray('  3. Add to ~/.synocat/config.json: { "pkgscriptsNg": "/path/to/pkgscripts-ng" }'));
+    console.log(chalk.gray('  4. Place pkgscripts-ng in common locations:'));
+    console.log(chalk.gray('     - ~/toolkit/pkgscripts-ng'));
+    console.log(chalk.gray('     - ~/Documents/toolkit/pkgscripts-ng'));
     process.exitCode = 1;
     return;
   }
+
+  // ── Validation ─────────────────────────────────────────────────────────
+
   if (!await fsExtra.pathExists(projectPath)) {
     console.error(chalk.red(`Project directory not found: ${projectPath}`));
     process.exitCode = 1;
     return;
   }
-  if (!await fsExtra.pathExists(path.join(pkgScriptPath, 'PkgCreate.py'))) {
-    console.error(chalk.red(`PkgCreate.py not found in: ${pkgScriptPath}`));
-    console.log(chalk.yellow('Ensure you provide the correct pkgscripts-ng directory'));
-    process.exitCode = 1;
-    return;
-  }
+  
   if (!await fsExtra.pathExists(path.join(projectPath, 'INFO'))) {
     console.error(chalk.red(`INFO file not found in: ${projectPath}`));
     console.log(chalk.yellow('This does not look like a valid Synology package project'));
