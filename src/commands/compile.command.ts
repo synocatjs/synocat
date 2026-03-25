@@ -327,7 +327,7 @@ export async function compileCommand(
       if (output.includes('warning') || output.includes('WARNING')) {
         process.stdout.write(chalk.yellow(output));
       } else {
-        process.stdout.write(chalk.red(output));
+        process.stdout.write(chalk.black(output));
       }
     });
 
