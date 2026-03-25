@@ -139,6 +139,7 @@ async function validateAndGetPackageName(projectPath: string): Promise<string> {
 async function detectPlatformFromInfo(projectPath: string): Promise<string> {
   try {
     const infoShPath = path.join(projectPath, 'INFO.sh');
+    console.log('info.sh: ',infoShPath);
     if (await fsExtra.pathExists(infoShPath)) {
       const content = await fsExtra.readFile(infoShPath, 'utf-8');
       const match = content.match(/arch="([^"]+)"/);
@@ -245,6 +246,7 @@ export async function compileCommand(
   // 从 INFO.sh 检测平台
   if (!platform) {
     const detected = await detectPlatformFromInfo(projectPath);
+    console.log(chalk.gray(`  ? Detected ${detected}`));
     if (detected) {
       platform = detected;
       console.log(chalk.gray(`  ✓ Detected platform from arch: ${platform}`));
