@@ -91,10 +91,6 @@ async function resolvePkgScriptsNg(
   return null;
 }
 
-/**
- * 检查项目必要文件并获取包名
- * 必须文件: INFO.sh 和 SynoBuildConf/build, SynoBuildConf/install
- */
 async function validateAndGetPackageName(projectPath: string): Promise<string> {
   const requiredFiles = [
     'INFO.sh',
@@ -140,32 +136,24 @@ async function validateAndGetPackageName(projectPath: string): Promise<string> {
   return dirName;
 }
 
-async function detectPlatform(projectPath: string): Promise<string> {
+async function detectPlatformFromInfo(projectPath: string): Promise<string> {
   try {
     const infoShPath = path.join(projectPath, 'INFO.sh');
     if (await fsExtra.pathExists(infoShPath)) {
       const content = await fsExtra.readFile(infoShPath, 'utf-8');
-      let match = content.match(/arch="([^"]+)"/);
+      const match = content.match(/arch="([^"]+)"/);
       if (match?.[1]) {
         const arch = match[1];
-        if (arch === 'noarch') {
-          return 'noarch';
+        if (arch !== 'noarch') {
+          return arch;
         }
-        return arch;
       }
-    }
-    
-    const infoPath = path.join(projectPath, 'INFO');
-    if (await fsExtra.pathExists(infoPath)) {
-      const content = await fsExtra.readFile(infoPath, 'utf-8');
-      const match = content.match(/arch="([^"]+)"/);
-      if (match?.[1]) return match[1];
     }
   } catch { /* ignore */ }
   return '';
 }
 
-async function detectDsmVersion(projectPath: string): Promise<string> {
+async function detectDsmVersionFromInfo(projectPath: string): Promise<string> {
   try {
     const infoShPath = path.join(projectPath, 'INFO.sh');
     if (await fsExtra.pathExists(infoShPath)) {
@@ -174,13 +162,6 @@ async function detectDsmVersion(projectPath: string): Promise<string> {
       if (match?.[1]) {
         return match[1];
       }
-    }
-    
-    const infoPath = path.join(projectPath, 'INFO');
-    if (await fsExtra.pathExists(infoPath)) {
-      const content = await fsExtra.readFile(infoPath, 'utf-8');
-      const match = content.match(/os_min_ver="(\d+\.\d+)/);
-      if (match?.[1]) return match[1];
     }
   } catch { /* ignore */ }
   return '';
@@ -256,48 +237,51 @@ export async function compileCommand(
   }
 
   // 确定平台和 DSM 版本
-  let platform = opts.platform;
-  let dsmVersion = opts.dsmVersion;
+  let platform: string | undefined = opts.platform;
+  let dsmVersion: string | undefined = opts.dsmVersion;
 
-  const config = await readGlobalConfig();
+  console.log(chalk.gray('\n🔍 Detecting configuration...'));
 
   // 从 INFO.sh 检测
   if (!platform) {
-    const detected = await detectPlatform(projectPath);
-    if (detected && detected !== 'noarch') {
+    const detected = await detectPlatformFromInfo(projectPath);
+    if (detected) {
       platform = detected;
-      console.log(chalk.gray(`🔍 Detected platform from arch: ${platform}`));
-    } else if (detected === 'noarch') {
-      console.log(chalk.gray(`  Detected arch=noarch, will use default platform`));
+      console.log(chalk.gray(`  ✓ Detected platform from arch: ${platform}`));
+    } else {
+      console.log(chalk.gray(`  ○ No arch detected in INFO.sh`));
     }
   }
 
   if (!dsmVersion) {
-    const detected = await detectDsmVersion(projectPath);
+    const detected = await detectDsmVersionFromInfo(projectPath);
     if (detected) {
       dsmVersion = detected;
-      console.log(chalk.gray(`🔍 Detected DSM version from os_min_ver: ${dsmVersion}`));
+      console.log(chalk.gray(`  ✓ Detected DSM version from os_min_ver: ${dsmVersion}`));
+    } else {
+      console.log(chalk.gray(`  ○ No os_min_ver detected in INFO.sh`));
     }
   }
 
   // 从全局配置获取
+  const config = await readGlobalConfig();
   if (!platform && config.defaultPlatform) {
     platform = config.defaultPlatform;
-    console.log(chalk.gray(`🔍 Using default platform from config: ${platform}`));
+    console.log(chalk.gray(`  ✓ Using default platform from config: ${platform}`));
   }
   if (!dsmVersion && config.defaultDsmVersion) {
     dsmVersion = config.defaultDsmVersion;
-    console.log(chalk.gray(`🔍 Using default DSM version from config: ${dsmVersion}`));
+    console.log(chalk.gray(`  ✓ Using default DSM version from config: ${dsmVersion}`));
   }
 
   // 最终默认值
   if (!platform) {
     platform = 'r1000';
-    console.log(chalk.gray(`🔍 Using default platform: ${platform}`));
+    console.log(chalk.gray(`  ✓ Using default platform: ${platform}`));
   }
   if (!dsmVersion) {
     dsmVersion = '7.2';
-    console.log(chalk.gray(`🔍 Using default DSM version: ${dsmVersion}`));
+    console.log(chalk.gray(`  ✓ Using default DSM version: ${dsmVersion}`));
   }
 
   console.log(chalk.gray('\n📋 Configuration:'));
@@ -315,8 +299,8 @@ export async function compileCommand(
   return new Promise((resolve, reject) => {
     const proc = spawn('sudo', [
       './PkgCreate.py',
-      '-v', dsmVersion,
-      '-p', platform,
+      '-v', dsmVersion!,
+      '-p', platform!,
       '-c', packageName,
     ], {
       cwd: pkgScriptPath,
