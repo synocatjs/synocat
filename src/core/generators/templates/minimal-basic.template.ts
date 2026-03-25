@@ -1,11 +1,11 @@
-import { GeneratedFile, ScaffoldConfig } from "../../../types";
-import { IScaffoldTemplate } from "./base.template";
+import type { IScaffoldTemplate } from "./base.template";
+import type { GeneratedFile, ScaffoldConfig } from "../../../types/";
 
-export class PlaceholderTemplate implements IScaffoldTemplate {
-  readonly type = 'minimal-basic';
+export class MinimalBasicTemplate implements IScaffoldTemplate {
+  readonly type = "minimal-basic";
 
   generate(_cfg: ScaffoldConfig): GeneratedFile[] {
-    return [];   // All common files handled by ScaffoldService
+    return [];
   }
 
   getNextSteps(cfg: ScaffoldConfig): string[] {

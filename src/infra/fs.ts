@@ -1,5 +1,5 @@
-import fsExtra from 'fs-extra';
-import nodePath from 'node:path';
+import fsExtra from "fs-extra";
+import nodePath from "node:path";
 
 // ─── Interface ────────────────────────────────────────────────────────────────
 
@@ -11,9 +11,14 @@ export interface IFileSystem {
   chmod(path: string, mode: number): void;
   copy(src: string, dst: string): void;
   readdir(path: string): string[];
-  stat(path: string): { size: number; isFile(): boolean; isDirectory(): boolean };
+  stat(path: string): {
+    size: number;
+    isFile(): boolean;
+    isDirectory(): boolean;
+  };
   remove(path: string): void;
   ensureDir(path: string): void;
+  writeBinary(path: string, content: Buffer): void;
 }
 
 // ─── Real implementation (wraps fs-extra) ────────────────────────────────────
@@ -23,11 +28,14 @@ export class NodeFileSystem implements IFileSystem {
     return fsExtra.existsSync(path);
   }
 
-  read(path: string, encoding: BufferEncoding = 'utf-8'): string {
+  read(path: string, encoding: BufferEncoding = "utf-8"): string {
     return fsExtra.readFileSync(path, encoding);
   }
 
   write(path: string, content: string): void {
+    fsExtra.outputFileSync(path, content);
+  }
+  writeBinary(path: string, content: Buffer): void {
     fsExtra.outputFileSync(path, content);
   }
 
@@ -47,7 +55,11 @@ export class NodeFileSystem implements IFileSystem {
     return fsExtra.readdirSync(path);
   }
 
-  stat(path: string): { size: number; isFile(): boolean; isDirectory(): boolean } {
+  stat(path: string): {
+    size: number;
+    isFile(): boolean;
+    isDirectory(): boolean;
+  } {
     return fsExtra.statSync(path);
   }
 
@@ -63,8 +75,8 @@ export class NodeFileSystem implements IFileSystem {
 // ─── In-memory implementation (for unit tests, zero I/O) ─────────────────────
 
 export class MemoryFileSystem implements IFileSystem {
-  public readonly files = new Map<string, string>();
-  public readonly dirs  = new Set<string>();
+  private files = new Map<string, string | Buffer>();
+  public readonly dirs = new Set<string>();
   public readonly modes = new Map<string, number>();
 
   private normalize(p: string): string {
@@ -76,13 +88,25 @@ export class MemoryFileSystem implements IFileSystem {
     return this.files.has(p) || this.dirs.has(p);
   }
 
-  read(path: string): string {
-    const content = this.files.get(this.normalize(path));
+  read(path: string, encoding: BufferEncoding = "utf-8"): string {
+    const p = this.normalize(path);
+    const content = this.files.get(p);
     if (content === undefined) throw new Error(`ENOENT: no such file: ${path}`);
+
+    // 如果是 Buffer，转换为字符串
+    if (Buffer.isBuffer(content)) {
+      return content.toString(encoding);
+    }
+    // 如果是字符串，直接返回
     return content;
   }
 
   write(path: string, content: string): void {
+    const p = this.normalize(path);
+    this.mkdir(nodePath.dirname(p));
+    this.files.set(p, content);
+  }
+  writeBinary(path: string, content: Buffer): void {
     const p = this.normalize(path);
     this.mkdir(nodePath.dirname(p));
     this.files.set(p, content);
@@ -108,7 +132,7 @@ export class MemoryFileSystem implements IFileSystem {
 
   readdir(path: string): string[] {
     const base = this.normalize(path);
-    const prefix = base.endsWith('/') ? base : base + nodePath.sep;
+    const prefix = base.endsWith("/") ? base : base + nodePath.sep;
     const seen = new Set<string>();
     for (const key of [...this.files.keys(), ...this.dirs]) {
       if (key.startsWith(prefix)) {
@@ -120,14 +144,18 @@ export class MemoryFileSystem implements IFileSystem {
     return [...seen];
   }
 
-  stat(path: string): { size: number; isFile(): boolean; isDirectory(): boolean } {
+  stat(path: string): {
+    size: number;
+    isFile(): boolean;
+    isDirectory(): boolean;
+  } {
     const p = this.normalize(path);
     const isFile = this.files.has(p);
-    const isDir  = this.dirs.has(p);
+    const isDir = this.dirs.has(p);
     if (!isFile && !isDir) throw new Error(`ENOENT: ${path}`);
     return {
       size: isFile ? (this.files.get(p)?.length ?? 0) : 0,
-      isFile:      () => isFile,
+      isFile: () => isFile,
       isDirectory: () => isDir && !isFile,
     };
   }

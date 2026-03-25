@@ -1,0 +1,27 @@
+#!/bin/bash
+
+set -e  # 遇到错误立即退出
+
+case ${MakeClean} in
+    [Yy][Ee][Ss])
+        echo "Cleaning build artifacts..."
+        make clean
+        ;;
+esac
+
+# 编译选项
+echo "CC: ${CC}"
+echo "CFLAGS: ${CFLAGS}"
+
+# 编译主程序
+echo "Compiling demo.c..."
+${CC} ${CFLAGS} demo.c -o demo.dummy
+
+
+# 如果有 Makefile，也可以使用 make
+if [ -f Makefile ]; then
+    echo "Running make ${MAKE_FLAGS}"
+    make ${MAKE_FLAGS}
+fi
+
+echo "Build completed successfully!"

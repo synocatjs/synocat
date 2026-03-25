@@ -2,7 +2,7 @@ import type { IScaffoldTemplate } from './base.template';
 import type { GeneratedFile, ScaffoldConfig } from '../../../types/';
 
 export class CliCCppTemplate implements IScaffoldTemplate {
-  readonly type = 'cli-c_cpp';
+  readonly type = 'cli-cpp';
 
   generate(cfg: ScaffoldConfig): GeneratedFile[] {
     return [

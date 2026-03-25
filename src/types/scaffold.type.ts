@@ -3,7 +3,8 @@ import type { InfoConfig } from './dsm.type';
 // ─── Template types ───────────────────────────────────────────────────────────
 
 export type TemplateType = 
-| 'minimal-app'
+| 'minimal-desktop'
+| 'minimal-basic'
 | 'minimal-service' 
 | 'background-go' 
 | 'background-node' 

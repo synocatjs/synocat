@@ -8,8 +8,8 @@ import { ValidatorService } from "../services/validator.service";
 import type {
   ScaffoldConfig,
   TemplateType,
-  ResourceShorthand,
 } from "../types/";
+import { Answers } from "../types/answer.type";
 
 type templateItemProp = {
   name: string;
@@ -19,9 +19,14 @@ type templateItemProp = {
 const TEMPLATE_CHOICES: templateItemProp[] = [
   // 基础模板
   {
-    name: `${chalk.bold("minimal-app")}      — Pure shell package (DSM Desktop UI) `,
+    name: `${chalk.bold("minimal-basic")}      — Pure shell package (DSM Desktop UI) `,
     short: "ma",
-    value: "minimal-app",
+    value: "minimal-basic",
+  },
+  {
+    name: `${chalk.bold("minimal-desktop")} — Minimal server app (supports all platforms)`,
+    short: "md",
+    value: "minimal-desktop",
   },
   {
     name: `${chalk.bold("minimal-service")} — Minimal server app (supports all platforms)`,
@@ -112,28 +117,6 @@ const TEMPLATE_CHOICES: templateItemProp[] = [
     value: "web-python",
   },
 ];
-
-interface Answers {
-  package: string;
-  displayname: string;
-  description: string;
-  version: string;
-  maintainer: string;
-  maintainer_url?: string;
-  arch: string;
-  arch_custom?: string;
-  os_min_ver: string;
-  templateType: TemplateType;
-  hasAdminUI?: boolean;
-  adminport?: string;
-  adminurl?: string;
-  adminprotocol?: "http" | "https";
-  hasResource?: boolean;
-  resourceType?: ResourceShorthand;
-  resourcePort?: string;
-  dsmuidir?: string;
-  dsmappname?: string;
-}
 
 export async function createCommand(
   name?: string,
@@ -400,6 +383,7 @@ export async function createCommand(
 
   const spinner = ora("Generating scaffold...").start();
 
+  // 生成文件
   try {
     const cfg: ScaffoldConfig = {
       package: answers.package,
@@ -436,7 +420,7 @@ export async function createCommand(
     // File list
     console.log("");
     console.log(chalk.bold("Generated files:"));
-    for (const f of files) {
+    for (const f of await files) {
       console.log(`  ${chalk.green("✓")} ${chalk.gray(cfg.package + "/")}${f}`);
     }
 
@@ -468,6 +452,7 @@ export async function createCommand(
     console.log(
       `  ${chalk.gray("Field docs:")} ${chalk.cyan("synocat info <field>")}`,
     );
+    console.log(`${chalk.gray("More:")} ${chalk.cyan("synocat help")}`);
     console.log("");
   } catch (err) {
     spinner.fail(chalk.red("Scaffold generation failed"));

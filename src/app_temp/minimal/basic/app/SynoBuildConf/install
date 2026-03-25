@@ -1,0 +1,67 @@
+#!/bin/bash
+
+### Use PKG_DIR as working directory.
+PKG_DIR=/tmp/_test_spk
+rm -rf $PKG_DIR
+mkdir -p $PKG_DIR
+
+### get spk packing functions
+source /pkgscripts/include/pkg_util.sh
+
+create_package_tgz() {
+	local package_tgz_dir=/tmp/_package_tgz
+	local binary_dir=$package_tgz_dir/usr/local/bin
+
+	### clear destination directory
+	rm -rf $package_tgz_dir && mkdir -p $package_tgz_dir
+
+	### install demo binary
+	mkdir -p $binary_dir
+	
+	# 修正：/source/mini-app → /source/v2
+	if [ -f /source/v2/demo ]; then
+		cp -av /source/v2/demo $binary_dir/
+	else
+		echo "Error: demo binary not found!"
+		exit 1
+	fi
+
+	### create package.tgz
+	pkg_make_package $package_tgz_dir "${PKG_DIR}"
+}
+
+create_spk(){
+	# 生成 INFO 文件
+	# 修正：/source/mini-app → /source/v2
+	if [ -f /source/v2/INFO.sh ]; then
+		cd /source/v2
+		./INFO.sh > INFO
+		cd - > /dev/null  # 返回原目录
+	fi
+	
+	# 复制文件
+	# 修正：/source/mini-app → /source/v2
+	[ -d /source/v2/scripts ] && cp -av /source/v2/scripts $PKG_DIR/
+	ls /source/v2/PACKAGE_ICON*.PNG 2>/dev/null && cp -av /source/v2/PACKAGE_ICON*.PNG $PKG_DIR
+	[ -d /source/v2/conf ] && cp -av /source/v2/conf $PKG_DIR/
+	
+	# 复制 INFO
+	# 修正：/source/mini-app → /source/v2
+	if [ -f /source/v2/INFO ]; then
+		cp -av /source/v2/INFO $PKG_DIR/
+	elif [ -f /source/v2/INFO.sh ]; then
+		# 如果没有 INFO 文件但有 INFO.sh，重新生成
+		(cd /source/v2 && ./INFO.sh) > $PKG_DIR/INFO
+	fi
+
+	### Create the final spk
+	mkdir -p /image/packages
+	pkg_make_spk ${PKG_DIR} "/image/packages" $(pkg_get_spk_family_name)
+}
+
+main() {
+	create_package_tgz
+	create_spk
+}
+
+main "$@"

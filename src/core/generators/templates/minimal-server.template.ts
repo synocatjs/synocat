@@ -1,8 +1,8 @@
 import type { IScaffoldTemplate } from './base.template';
 import type { GeneratedFile, ScaffoldConfig } from '../../../types/';
 
-export class MinimalTemplate implements IScaffoldTemplate {
-  readonly type = 'minimal';
+export class MinimalServerTemplate implements IScaffoldTemplate {
+  readonly type = 'minimal-server';
 
   generate(_cfg: ScaffoldConfig): GeneratedFile[] {
     return [];   // All common files handled by ScaffoldService
